@@ -9,8 +9,7 @@ git submodule update --init --recursive # get the submodules
 mkdir build         # create the `root/build/` directory
 cd build            # into the `root/build/` directory
 cmake ..            # configure the project
-cd ..               # back into the `root/` directory
-cmake --build build # build the project
+cmake --build .     # build the project
 ```
 
 See also:
