@@ -15,12 +15,14 @@ sf::Text createText(const std::string& text, sf::Vector2f position, sf::Font& fo
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "SFML works!");
+    // window.setFramerateLimit(60);
 
     sf::Font font;
-    // these paths are relative to the executable living in qelp/build/Debug/
-    if (!font.loadFromFile("../../assets/fonts/victor-pixel.ttf")) throw std::runtime_error("Error loading font");
+    // these paths are relative to the working directory the program is run from
+    // in this case, the working directory is the build directory (qelp/build/)
+    if (!font.loadFromFile("../assets/fonts/victor-pixel.ttf")) throw std::runtime_error("Error loading font");
     sf::Texture texture;
-    if (!texture.loadFromFile("../../assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
+    if (!texture.loadFromFile("../assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
     sf::Sprite sprite;
     sprite.setTexture(texture);
     sprite.setOrigin(sf::Vector2f(texture.getSize().x / 2, texture.getSize().y / 2));
@@ -67,8 +69,8 @@ int main() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             auto rotation = sprite.getRotation();
             rotation += sf::degrees(-90.f); // rotate 'forward' vector ccw to match texture
-            float x = static_cast<float>(std::cos(rotation.asRadians()) * 100.f * dt);
-            float y = static_cast<float>(std::sin(rotation.asRadians()) * 100.f * dt);
+            float x = static_cast<float>(std::cos(rotation.asRadians()) * 200.f * dt);
+            float y = static_cast<float>(std::sin(rotation.asRadians()) * 200.f * dt);
             sprite.move({x, y});
         }
 
