@@ -13,6 +13,31 @@ sf::Text createText(const std::string& text, sf::Vector2f position, sf::Font& fo
     return textObject;
 }
 
+class ShipEntity: public sf::Sprite {
+public:
+    ShipEntity(const sf::Texture& texture, sf::Sprite&& attached_sprite, sf::Vector2f offset): mAttached(attached_sprite) {
+        setTexture(texture);
+        setOrigin(sf::Vector2f((float)(texture.getSize().x / 2), (float)(texture.getSize().y / 2)));
+
+        sf::FloatRect attachedBounds = attached_sprite.getLocalBounds();
+        attached_sprite.setOrigin({attachedBounds.width / 2, attachedBounds.height / 2});
+        attached_sprite.setPosition(offset);
+    }
+    virtual ~ShipEntity() = default;
+
+private:
+    sf::Sprite mAttached;
+
+    /* https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/Sprite.cpp#L134-L144 */
+    /* https://github.com/SFML/SFML/blob/master/include/SFML/Graphics/Sprite.hpp */
+    void draw(sf::RenderTarget& target, const sf::RenderStates& states) const override {
+        target.draw(static_cast<const sf::Sprite>(*this));
+        sf::RenderStates statesCopy = states;
+        statesCopy.transform *= getTransform();
+        target.draw(mAttached, statesCopy);
+    }
+};  // class ShipEntity
+
 int main() {
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "SFML works!");
     // window.setFramerateLimit(60);
@@ -23,15 +48,31 @@ int main() {
     if (!font.loadFromFile("../assets/fonts/victor-pixel.ttf")) throw std::runtime_error("Error loading font");
     sf::Texture texture;
     if (!texture.loadFromFile("../assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
-    sf::Sprite sprite;
-    sprite.setTexture(texture);
-    sprite.setOrigin(sf::Vector2f(texture.getSize().x / 2, texture.getSize().y / 2));
 
+    std::unique_ptr<sf::Texture> texture_ptr = nullptr;
+    {
+        sf::RenderTexture rt;
+        if (!rt.create({16, 16})) throw std::runtime_error("Error creating render texture");
+        rt.clear(sf::Color::Red);
+        rt.display();
+        texture_ptr = std::make_unique<sf::Texture>(rt.getTexture());
+        assert (texture_ptr != nullptr);
+    }
+
+    sf::Sprite sproot(*texture_ptr);
+    sproot.setTexture(*texture_ptr);
+
+    ShipEntity ship(
+        texture,
+        std::move(sproot),
+        {100,50}
+        );
+    
     sf::CircleShape shape(100.f); // orange circle
     shape.setFillColor(sf::Color(255,140,0,255));
     
     sf::Text info_text = createText("", {0, 0}, font, window, 10, sf::Color::Green);
-    sf::Text entry_text = createText("> ", {0,2*720/3}, font, window, 10, sf::Color::Green);
+    sf::Text entry_text = createText("> ", {0,2*270/3}, font, window, 10, sf::Color::Green);
 
     sf::RenderTexture renderTexture;
     if (!renderTexture.create({1280, 720})) throw std::runtime_error("Error creating render texture");
@@ -62,21 +103,21 @@ int main() {
         info_text.setString(std::to_string(16-static_cast<int>(dt*1000))+" ms frame budget");
 
         // if keydown 'd' move sprite to the right
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) sprite.rotate(sf::degrees(static_cast<float>(90.f*dt)));
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) ship.rotate(sf::degrees(static_cast<float>(90.f*dt)));
         // if keydown 'a' move sprite to the left
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) sprite.rotate(sf::degrees(static_cast<float>(-90.f*dt)));
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) ship.rotate(sf::degrees(static_cast<float>(-90.f*dt)));
         // if keydown 'w' move sprite "forward"
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            auto rotation = sprite.getRotation();
+            auto rotation = ship.getRotation();
             rotation += sf::degrees(-90.f); // rotate 'forward' vector ccw to match texture
             float x = static_cast<float>(std::cos(rotation.asRadians()) * 200.f * dt);
             float y = static_cast<float>(std::sin(rotation.asRadians()) * 200.f * dt);
-            sprite.move({x, y});
+            ship.move({x, y});
         }
 
         {
             sf::View view = renderTexture.getView();
-            view.setCenter(sprite.getPosition());
+            view.setCenter(ship.getPosition());
             renderTexture.setView(view);
         }
         
@@ -85,7 +126,7 @@ int main() {
             auto world_pos = window.mapPixelToCoords(mouse_pos);
             // draw a line between the sprite and the mouse
             sf::Vertex line[] = {
-                sf::Vertex(sprite.getPosition()),
+                sf::Vertex(ship.getPosition()),
                 sf::Vertex(world_pos)
             };
             window.draw(line, 2, sf::PrimitiveType::Lines);
@@ -94,7 +135,11 @@ int main() {
             {
                 renderTexture.clear(sf::Color::Black);
                 renderTexture.draw(shape);
-                renderTexture.draw(sprite);
+
+                renderTexture.draw(ship);  // https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/RenderTarget.cpp#L247-L250
+                                           // ship is a Ship, which inherits from sf::Drawable (via sf::Sprite)
+                                           // so it can be drawn to a RenderTarget
+
                 renderTexture.display();
             }
             window.clear();
