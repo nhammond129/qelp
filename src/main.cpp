@@ -18,20 +18,15 @@ public:
     ShipEntity(const sf::Texture& texture, sf::Sprite&& attached_sprite, sf::Vector2f offset): mAttached(attached_sprite) {
         setTexture(texture);
         setOrigin(sf::Vector2f((float)(texture.getSize().x / 2), (float)(texture.getSize().y / 2)));
-
-        sf::FloatRect attachedBounds = attached_sprite.getLocalBounds();
-        attached_sprite.setOrigin({attachedBounds.width / 2, attachedBounds.height / 2});
         attached_sprite.setPosition(offset);
     }
     virtual ~ShipEntity() = default;
 
-private:
     sf::Sprite mAttached;
-
-    /* https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/Sprite.cpp#L134-L144 */
-    /* https://github.com/SFML/SFML/blob/master/include/SFML/Graphics/Sprite.hpp */
+private:
     void draw(sf::RenderTarget& target, const sf::RenderStates& states) const override {
         target.draw(static_cast<const sf::Sprite>(*this));
+
         sf::RenderStates statesCopy = states;
         statesCopy.transform *= getTransform();
         target.draw(mAttached, statesCopy);
@@ -61,12 +56,16 @@ int main() {
 
     sf::Sprite sproot(*texture_ptr);
     sproot.setTexture(*texture_ptr);
+    sf::FloatRect attachedBounds = sproot.getLocalBounds();
+    std::cout << "{ " << attachedBounds.width / 2 << ", " << attachedBounds.height / 2 << " }" << std::endl;
+    sproot.setOrigin({attachedBounds.width / 2, attachedBounds.height / 2});
 
+    // TODO: play with builder pattern that rust users are so fond of
     ShipEntity ship(
         texture,
         std::move(sproot),
         {100,50}
-        );
+    );
     
     sf::CircleShape shape(100.f); // orange circle
     shape.setFillColor(sf::Color(255,140,0,255));
@@ -94,7 +93,7 @@ int main() {
                 } else if (event.text.unicode == 127) {  // ctrl-backspace to clear the entry
                     entry_text.setString("> ");
                 } else {
-                    std::cout << "character typed: " << static_cast<uint16_t>(event.text.unicode) << std::endl;
+                    // std::cout << "character typed: " << static_cast<uint16_t>(event.text.unicode) << std::endl;
                     entry_text.setString(entry_text.getString() + static_cast<char>(event.text.unicode));
                 }
             }
@@ -106,13 +105,15 @@ int main() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) ship.rotate(sf::degrees(static_cast<float>(90.f*dt)));
         // if keydown 'a' move sprite to the left
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) ship.rotate(sf::degrees(static_cast<float>(-90.f*dt)));
-        // if keydown 'w' move sprite "forward"
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             auto rotation = ship.getRotation();
             rotation += sf::degrees(-90.f); // rotate 'forward' vector ccw to match texture
             float x = static_cast<float>(std::cos(rotation.asRadians()) * 200.f * dt);
             float y = static_cast<float>(std::sin(rotation.asRadians()) * 200.f * dt);
             ship.move({x, y});
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {  // s for spiiiin
+            ship.mAttached.rotate(sf::degrees(static_cast<float>(360.f*dt)));
         }
 
         {
@@ -135,11 +136,7 @@ int main() {
             {
                 renderTexture.clear(sf::Color::Black);
                 renderTexture.draw(shape);
-
-                renderTexture.draw(ship);  // https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/RenderTarget.cpp#L247-L250
-                                           // ship is a Ship, which inherits from sf::Drawable (via sf::Sprite)
-                                           // so it can be drawn to a RenderTarget
-
+                renderTexture.draw(ship);
                 renderTexture.display();
             }
             window.clear();
