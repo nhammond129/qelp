@@ -16,15 +16,15 @@ sf::Texture programmerArtTexture(float width, float height, const sf::Color colo
     rect.setPosition({1, 1});
     rt.draw(rect);
 
-    // draw arrow in the 'middle', pointing 'up' from `y=height` to `y=0`
+    // draw arrow in the 'middle', pointing 'right' from x=0 to x=width
     sf::VertexArray lines(sf::PrimitiveType::Lines, 6);
     {
-        lines[0].position = {width / 2.0f, height * 0.9f};
-        lines[1].position = {width / 2.0f, height * 0.1f};
-        lines[2].position = {width / 2.0f, height * 0.1f};
-        lines[3].position = {width / 3.0f, height * 0.2f};
-        lines[4].position = {width / 2.0f, height * 0.1f};
-        lines[5].position = {width * 2.0f / 3.0f, height * 0.2f};
+        lines[0].position = {width * 0.1f, height / 2.f};
+        lines[1].position = {width * 0.9f, height / 2.f};
+        lines[2].position = {width * 0.9f, height / 2.f};
+        lines[3].position = {width * 0.8f, height / 2.f - height * 0.1f};
+        lines[4].position = {width * 0.9f, height / 2.f};
+        lines[5].position = {width * 0.8f, height / 2.f + height * 0.1f};
     }
     for (int i = 0; i < 6; ++i) { lines[i].color = color; }
     rt.draw(lines);
