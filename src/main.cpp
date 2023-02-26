@@ -1,7 +1,7 @@
-#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
 #include <exception>
+#include <SFML/Graphics.hpp>
 #include <util.hpp>
 
 sf::Text createText(const std::string& text, sf::Vector2f position, sf::Font& font, sf::RenderWindow& window, unsigned int size = 10, sf::Color color = sf::Color::White) {
@@ -41,9 +41,9 @@ int main() {
     sf::Font font;
     // these paths are relative to the working directory the program is run from
     // in this case, the working directory is the build directory (qelp/build/)
-    if (!font.loadFromFile("../assets/fonts/victor-pixel.ttf")) throw std::runtime_error("Error loading font");
+    if (!font.loadFromFile("./assets/fonts/victor-pixel.ttf")) throw std::runtime_error("Error loading font");
     sf::Texture texture;
-    if (!texture.loadFromFile("../assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
+    if (!texture.loadFromFile("./assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
 
     sf::Texture turret_texture = util::programmerArtTexture(16, 32, sf::Color::Red, sf::Color::Transparent);
 

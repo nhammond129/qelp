@@ -6,14 +6,14 @@ Building
 ----
 ```bash
 git submodule update --init --recursive # get the submodules
-mkdir build         # create the `root/build/` directory
-cd build            # into the `root/build/` directory
-cmake ..            # configure the project
-cmake --build .     # build the project
+cmake -S . -B build     # generate the build files
+cmake --build build     # build the project
+./build/Debug/qelp.exe  # run the project
 ```
 
 See also:
  * [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/)
+ * [SFML Documentation](https://www.sfml-dev.org/documentation/2.5.1/modules.php)
 
 Attribution
 ----

@@ -23,4 +23,8 @@ target_sources(qelp PRIVATE
 
 target_include_directories(qelp PUBLIC "${SOURCE_DIR}/include")
 
-target_link_libraries(qelp sfml-graphics sfml-window sfml-system)
+target_link_libraries(qelp
+    sfml-graphics
+    sfml-window
+    sfml-system
+)
