@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include <util.hpp>
 
 sf::Text createText(const std::string& text, sf::Vector2f position, sf::Font& font, sf::RenderWindow& window, unsigned int size = 10, sf::Color color = sf::Color::White) {
     sf::Text textObject;
@@ -44,21 +45,11 @@ int main() {
     sf::Texture texture;
     if (!texture.loadFromFile("../assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
 
-    std::unique_ptr<sf::Texture> texture_ptr = nullptr;
-    {
-        sf::RenderTexture rt;
-        if (!rt.create({16, 16})) throw std::runtime_error("Error creating render texture");
-        rt.clear(sf::Color::Red);
-        rt.display();
-        texture_ptr = std::make_unique<sf::Texture>(rt.getTexture());
-        assert (texture_ptr != nullptr);
-    }
+    sf::Texture turret_texture = util::programmerArtTexture(16, 32, sf::Color::Red, sf::Color::Transparent);
 
-    sf::Sprite sproot(*texture_ptr);
-    sproot.setTexture(*texture_ptr);
+    sf::Sprite sproot(turret_texture);
     sf::FloatRect attachedBounds = sproot.getLocalBounds();
-    std::cout << "{ " << attachedBounds.width / 2 << ", " << attachedBounds.height / 2 << " }" << std::endl;
-    sproot.setOrigin({attachedBounds.width / 2, attachedBounds.height / 2});
+    sproot.setOrigin({attachedBounds.width / 2.f, attachedBounds.height * 3.f / 4.f});
 
     // TODO: play with builder pattern that rust users are so fond of
     ShipEntity ship(
