@@ -3,8 +3,12 @@
 #include <iostream>
 #include <math.h>
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
 #include <string>
 #include <util.hpp>
+#include <imgui.h>
+#include <imgui-SFML.h>
 
 sf::Text createText(const std::string& text, sf::Vector2f position, sf::Font& font, sf::RenderWindow& window, unsigned int size = 10, sf::Color color = sf::Color::White) {
     sf::Text textObject;
@@ -47,10 +51,11 @@ private:
 int main() {
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "SFML works!");
     // window.setFramerateLimit(60);
+    ImGui::SFML::Init(window);
 
     sf::Font font;
     // these paths are relative to the working directory the program is run from
-    // in this case, the working directory is the build directory (qelp/build/)
+    // in this case, the working directory is assumed to be the project root directory (where the top CMakeLists.txt is)
     if (!font.loadFromFile("./assets/fonts/victor-pixel.ttf")) throw std::runtime_error("Error loading font");
     sf::Texture texture;
     if (!texture.loadFromFile("./assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
@@ -78,8 +83,16 @@ int main() {
 
     sf::Clock clock;
     while (window.isOpen()) {
+        sf::Time sf_dt = clock.restart();
+        float dt = sf_dt.asSeconds();
+        info_text.setString(std::to_string(16-static_cast<int>(dt*1000))+" ms frame budget");
+        renderTexture.clear(sf::Color::Black);
+        window.clear();
+
         sf::Event event;
         while (window.pollEvent(event)) {
+            ImGui::SFML::ProcessEvent(window, event);
+
             if (event.type == sf::Event::Closed)
                 window.close();
             if (event.type == sf::Event::TextEntered) {
@@ -98,10 +111,13 @@ int main() {
                 }
             }
         }
-        float dt = clock.restart().asSeconds();
-        info_text.setString(std::to_string(16-static_cast<int>(dt*1000))+" ms frame budget");
-        renderTexture.clear(sf::Color::Black);
-        window.clear();
+        ImGui::SFML::Update(window, sf_dt);
+
+        ImGui::ShowDemoWindow();
+
+        ImGui::Begin("Hello, world!");
+        ImGui::Text("This is some useful text.");
+        ImGui::End();
 
         // if keydown 'd' move sprite to the right
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) ship.rotate(sf::degrees(static_cast<float>(90.f*dt)));
@@ -144,9 +160,12 @@ int main() {
             window.draw(sf::Sprite(renderTexture.getTexture()));
             window.draw(info_text);
             window.draw(entry_text);
+            ImGui::SFML::Render(window);
             window.display();
         }
     }
+
+    ImGui::SFML::Shutdown();
 
     return 0;
 }
