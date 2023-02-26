@@ -2,3 +2,4 @@
 build/**
 extern/**
 !extern/CMakeLists.txt
+imgui.ini
