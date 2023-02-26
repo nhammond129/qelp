@@ -55,7 +55,7 @@ int main() {
 
     sf::Font font;
     // these paths are relative to the working directory the program is run from
-    // in this case, the working directory is the build directory (qelp/build/)
+    // in this case, the working directory is assumed to be the project root directory (where the top CMakeLists.txt is)
     if (!font.loadFromFile("./assets/fonts/victor-pixel.ttf")) throw std::runtime_error("Error loading font");
     sf::Texture texture;
     if (!texture.loadFromFile("./assets/sprites/space_carrier_0.png")) throw std::runtime_error("Error loading texture");
