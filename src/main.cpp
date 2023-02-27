@@ -1,5 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <exception>
+#include <imgui-SFML.h>
+#include <imgui.h>
 #include <iostream>
 #include <math.h>
 #include <SFML/Graphics.hpp>
@@ -7,8 +9,6 @@
 #include <SFML/Window.hpp>
 #include <string>
 #include <util.hpp>
-#include <imgui.h>
-#include <imgui-SFML.h>
 
 sf::Text createText(const std::string& text, sf::Vector2f position, sf::Font& font, sf::RenderWindow& window, unsigned int size = 10, sf::Color color = sf::Color::White) {
     sf::Text textObject;
