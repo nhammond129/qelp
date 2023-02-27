@@ -17,7 +17,6 @@ namespace scenes {
  */
 class SceneManager {
 public:
-    SceneManager() = delete;
     SceneManager(IScene* first_scene);
     ~SceneManager();
 
