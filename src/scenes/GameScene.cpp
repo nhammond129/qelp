@@ -1,13 +1,14 @@
-#include <scenes.hpp>
 #include <config.hpp>
 #include <imgui.h>
+#include <math.h>
+#include <scenes.hpp>
 
 namespace scenes {
 
 GameScene::GameScene() {
     if (!mFont.loadFromFile("assets/fonts/victor-pixel.ttf"))
         throw std::runtime_error("Error loading font: 'assets/fonts/victor-pixel.ttf'");
-    
+
     IScene::mWindow.create(
         sf::VideoMode({config::SCREEN_WIDTH, config::SCREEN_HEIGHT}),
         config::WINDOW_TITLE
@@ -37,7 +38,7 @@ void GameScene::update() {
 
     mTurretSprite.setPosition(mShipSprite.getPosition() + mTurretOffset.rotatedBy(mShipSprite.getRotation()));
     mTurretSprite.setRotation(mTurretSprite.getRotation() + sf::degrees(1.f));
-    
+
     // if keydown 'd' move sprite to the right
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) mShipSprite.rotate(sf::degrees(static_cast<float>(90.f*dt)));
     // if keydown 'a' move sprite to the left
