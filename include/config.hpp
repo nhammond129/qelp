@@ -4,7 +4,7 @@
 
 namespace config {
 
-static [[maybe_unused]] std::string CONFIG_FILE = "config.ini";
+static std::string CONFIG_FILE = "config.ini";
 static std::string WINDOW_TITLE = "qelp";
 static uint32_t SCREEN_WIDTH = 1600;
 static uint32_t SCREEN_HEIGHT = 900;
