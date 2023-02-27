@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <iostream>
 #include <math.h>
+#include <scenes.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
@@ -48,7 +49,23 @@ private:
     }
 };  // class ShipEntity
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc > 1) {
+        for (int i = 1; i < argc; i++) {
+            std::cout << "argv[" << i << "] = '"<< argv[i] << "'" << std::endl;
+        }
+    }
+
+    scenes::SceneManager manager(new scenes::MenuScene());
+
+    while (manager.isRunning()) {
+        manager.handleEvents();
+        manager.update();
+        manager.draw();
+    }
+}
+
+int old_main() {
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "SFML works!");
     // window.setFramerateLimit(60);
     ImGui::SFML::Init(window);
