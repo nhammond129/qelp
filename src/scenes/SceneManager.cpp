@@ -1,35 +1,33 @@
-#include <scenes/SceneManager.hpp>
+#include <scenes.hpp>
 #include <config.hpp>
 
 namespace scenes {
 
+std::vector<std::shared_ptr<IScene>> SceneManager::mScenes;
+
 SceneManager::SceneManager(IScene* first_scene) {
     mScenes.push_back(std::shared_ptr<IScene>(first_scene));
-
-    /*  TODO
-        config::tryLoadConfig();    */
-    mWindow.create(
-        sf::VideoMode({config::SCREEN_WIDTH, config::SCREEN_HEIGHT}),
-        config::WINDOW_TITLE
-    );
-    mWindow.setFramerateLimit(config::MAX_FPS);
+    IScene::init_imgui();
 }
 
-void SceneManager::draw() {
+SceneManager::~SceneManager() {
+    IScene::shutdown_imgui();
+}
+
+void SceneManager::handleEvents() {
     auto current_scene_ptr = getCurrentScene();
-    mWindow.clear();
-    current_scene_ptr->draw(mWindow);
-    mWindow.display();
+    current_scene_ptr->handleEvents();
 }
 
 void SceneManager::update() {
     auto current_scene_ptr = getCurrentScene();
     current_scene_ptr->update();
+    IScene::update_imgui();
 }
 
-void SceneManager::handleEvents() {
+void SceneManager::draw() {
     auto current_scene_ptr = getCurrentScene();
-    current_scene_ptr->handleEvents(mWindow);
+    current_scene_ptr->draw();
 }
 
 void SceneManager::pushScene(IScene* scene) {
@@ -39,16 +37,16 @@ void SceneManager::pushScene(IScene* scene) {
 void SceneManager::popScene() {
     if (mScenes.size() > 1) {
         mScenes.pop_back();
-    } else {
-        throw std::runtime_error("Can't pop last scene");
+    } else { // if there is only one scene left, just quit
+        quit();
     }
 }
 
-bool SceneManager::isRunning() const noexcept {
+bool SceneManager::isRunning() const {
     return mRunning;
 }
 
-void SceneManager::quit() noexcept {
+void SceneManager::quit() {
     mRunning = false;
 }
 

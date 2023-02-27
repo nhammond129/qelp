@@ -17,8 +17,9 @@ namespace scenes {
  */
 class SceneManager {
 public:
+    SceneManager() = delete;
     SceneManager(IScene* first_scene);
-    ~SceneManager() = default;
+    ~SceneManager();
 
     // no copy, no assign -- SINGLETON
     SceneManager(const SceneManager&) = delete;
@@ -31,13 +32,12 @@ public:
     void pushScene(IScene* scene);
     void popScene();
 
-    bool isRunning() const noexcept;
-    void quit() noexcept;
+    bool isRunning() const;
+    static void quit();
 
 private:
-    bool mRunning = true;
-    std::vector<std::shared_ptr<IScene>> mScenes;
-    sf::RenderWindow mWindow;
+    inline static bool mRunning = true;
+    static std::vector<std::shared_ptr<IScene>> mScenes;
 
     const std::shared_ptr<IScene> getCurrentScene() const;
 };
