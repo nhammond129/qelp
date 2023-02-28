@@ -1,33 +1,50 @@
 #include <scenes.hpp>
+#include <imgui.h>
+#include <imgui-SFML.h>
 #include <config.hpp>
 
 namespace scenes {
 
-std::vector<std::shared_ptr<IScene>> SceneManager::mScenes;
-
-SceneManager::SceneManager(IScene* first_scene) {
+SceneManager::SceneManager(IScene* first_scene, const sf::VideoMode& video_mode, const std::string& title) {
     mScenes.push_back(std::shared_ptr<IScene>(first_scene));
-    IScene::init_imgui();
+
+    mWindow.create(video_mode, title);
+
+    if (!ImGui::SFML::Init(mWindow)) {
+        throw std::runtime_error("Failed to initialize ImGui");
+    }
 }
 
 SceneManager::~SceneManager() {
-    IScene::shutdown_imgui();
+    ImGui::SFML::Shutdown(mWindow);
 }
 
 void SceneManager::handleEvents() {
-    auto current_scene_ptr = getCurrentScene();
-    current_scene_ptr->handleEvents();
+    sf::Event event;
+    while (mWindow.pollEvent(event)) {
+        ImGui::SFML::ProcessEvent(mWindow, event);
+        if (event.type == sf::Event::Closed) {
+            mWindow.close();
+        } else {
+            auto current_scene_ptr = getCurrentScene();
+            current_scene_ptr->handleEvent(event);
+        }
+    }
 }
 
 void SceneManager::update() {
-    IScene::update_imgui();  // this must happen first if we want imgui calls in scene's update()
+    sf::Time elapsed = mClock.restart();
+    ImGui::SFML::Update(mWindow, elapsed);
     auto current_scene_ptr = getCurrentScene();
-    current_scene_ptr->update();
+    current_scene_ptr->update(elapsed);
 }
 
 void SceneManager::draw() {
+    mWindow.clear();
     auto current_scene_ptr = getCurrentScene();
-    current_scene_ptr->draw();
+    current_scene_ptr->draw(mWindow);
+    ImGui::SFML::Render(mWindow);
+    mWindow.display();
 }
 
 void SceneManager::pushScene(IScene* scene) {
@@ -43,11 +60,12 @@ void SceneManager::popScene() {
 }
 
 bool SceneManager::isRunning() const {
-    return mRunning;
+    return mWindow.isOpen();
 }
 
 void SceneManager::quit() {
-    mRunning = false;
+    mWindow.close();
+    ImGui::SFML::Shutdown(mWindow);
 }
 
 const std::shared_ptr<IScene> SceneManager::getCurrentScene() const {

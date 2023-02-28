@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#include <config.hpp>
 #include <exception>
 #include <imgui-SFML.h>
 #include <imgui.h>
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    scenes::SceneManager manager(new scenes::MenuScene());
+    scenes::SceneManager manager(new scenes::MenuScene(), sf::VideoMode({config::SCREEN_WIDTH, config::SCREEN_HEIGHT}), config::WINDOW_TITLE);
     while (manager.isRunning()) {
         manager.handleEvents();
         manager.update();

@@ -8,9 +8,9 @@ class GameScene: public IScene {
 public:
     GameScene();
 
-    void draw() override;
-    void update() override;
-    void handleEvents() override;
+    void draw(sf::RenderWindow& window) override;
+    void update(const sf::Time& dt) override;
+    void handleEvent(const sf::Event& event) override;
 private:
     sf::Texture  mShipTexture;
     sf::Texture  mShipTurretTexture;
