@@ -1,5 +1,6 @@
 #include <scenes.hpp>
 #include <config.hpp>
+#include <imgui.h>
 
 namespace scenes {
 
@@ -19,24 +20,29 @@ MenuScene::MenuScene() {
     mText.setPosition({100.f, 100.f});
 }
 
-void MenuScene::draw() {
-    mWindow.clear();
-    mWindow.draw(mText);
-    mWindow.display();
-}
-
-void MenuScene::update() {
-    mText.setString("Hello World! " + std::to_string(mClock.getElapsedTime().asSeconds()));
-}
-
 void MenuScene::handleEvents() {
     sf::Event event;
     while (mWindow.pollEvent(event)) {
-        // ImGui::SFML::ProcessEvent(event);
+		handleEvent_imgui(event);
         if (event.type == sf::Event::Closed) {
             mWindow.close();
         }
     }
+}
+
+void MenuScene::update() {
+    mText.setString("Hello World! " + std::to_string(mClock.getElapsedTime().asSeconds()));
+
+	ImGui::Begin("Hello, world!");
+	ImGui::Text("This is some useful text.");
+	ImGui::End();
+}
+
+void MenuScene::draw() {
+    mWindow.clear();
+    mWindow.draw(mText);
+	draw_imgui();
+    mWindow.display();
 }
 
 };  // namespace scenes

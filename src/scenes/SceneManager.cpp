@@ -20,9 +20,9 @@ void SceneManager::handleEvents() {
 }
 
 void SceneManager::update() {
+    IScene::update_imgui();  // this must happen first if we want imgui calls in scene's update()
     auto current_scene_ptr = getCurrentScene();
     current_scene_ptr->update();
-    IScene::update_imgui();
 }
 
 void SceneManager::draw() {

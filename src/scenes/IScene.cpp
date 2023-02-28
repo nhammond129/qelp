@@ -1,6 +1,7 @@
-#include <scenes/IScene.hpp>
+#include <exception>
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <scenes/IScene.hpp>
 
 namespace scenes {
 
@@ -10,7 +11,9 @@ sf::Clock IScene::mClock;
 sf::RenderWindow IScene::mWindow;
 
 void IScene::init_imgui() {
-    ImGui::SFML::Init(IScene::mWindow);
+    if (!ImGui::SFML::Init(IScene::mWindow)) {
+		throw std::runtime_error("Failed to initialize ImGui");
+	}
 }
 
 void IScene::handleEvent_imgui(const sf::Event& event) {
