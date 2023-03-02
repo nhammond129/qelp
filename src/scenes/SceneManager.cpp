@@ -5,9 +5,7 @@
 
 namespace scenes {
 
-SceneManager::SceneManager(IScene* first_scene, const sf::VideoMode& video_mode, const std::string& title) {
-    mScenes.push_back(std::shared_ptr<IScene>(first_scene));
-
+SceneManager::SceneManager(const sf::VideoMode& video_mode, const std::string& title) {
     mWindow.create(video_mode, title);
 
     if (!ImGui::SFML::Init(mWindow)) {
@@ -23,6 +21,23 @@ void SceneManager::handleEvents() {
     sf::Event event;
     while (mWindow.pollEvent(event)) {
         ImGui::SFML::ProcessEvent(mWindow, event);
+
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.WantCaptureKeyboard) {
+            if (event.type == sf::Event::KeyPressed  ||
+                event.type == sf::Event::KeyReleased ||
+                event.type == sf::Event::TextEntered ) {
+                continue;
+            }
+        } else if (io.WantCaptureMouse) {
+            if (event.type == sf::Event::MouseButtonPressed  ||
+                event.type == sf::Event::MouseButtonReleased ||
+                event.type == sf::Event::MouseMoved          ||
+                event.type == sf::Event::MouseWheelScrolled  ) {
+                continue;
+            }
+        }
+
         if (event.type == sf::Event::Closed) {
             mWindow.close();
         } else {
@@ -57,6 +72,10 @@ void SceneManager::popScene() {
     } else { // if there is only one scene left, just quit
         quit();
     }
+}
+
+sf::RenderWindow& SceneManager::window() {
+    return mWindow;
 }
 
 bool SceneManager::isRunning() const {

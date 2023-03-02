@@ -6,7 +6,7 @@ namespace scenes {
 
 class GameScene: public IScene {
 public:
-    GameScene();
+    GameScene(SceneManager& manager);
 
     void draw(sf::RenderWindow& window) override;
     void update(const sf::Time& dt) override;

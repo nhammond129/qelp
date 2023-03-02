@@ -6,7 +6,7 @@ namespace scenes {
 
 class MenuScene: public IScene {
 public:
-    MenuScene();
+    MenuScene(SceneManager& manager);
 
     void draw(sf::RenderWindow& window) override;
     void update(const sf::Time& dt) override;

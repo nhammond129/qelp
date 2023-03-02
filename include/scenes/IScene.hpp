@@ -4,6 +4,8 @@
 
 namespace scenes {
 
+class SceneManager;
+
 /**
  * @brief Interface for all scenes
  * 
@@ -14,8 +16,12 @@ namespace scenes {
 class IScene {
 protected:
     sf::Clock mClock;
-    sf::RenderWindow* mWindowptr = nullptr;
+    SceneManager& mManager;
 public:
+    IScene() = delete;
+    IScene(SceneManager& manager) : mManager(manager) {}
+    virtual ~IScene() = default;
+
     /* Abstract interface functions */
     virtual void draw(sf::RenderWindow& window) = 0;
     virtual void update(const sf::Time& dt) = 0;

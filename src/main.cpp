@@ -20,7 +20,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    scenes::SceneManager manager(new scenes::MenuScene(), sf::VideoMode({config::SCREEN_WIDTH, config::SCREEN_HEIGHT}), config::WINDOW_TITLE);
+    scenes::SceneManager manager(sf::VideoMode({config::SCREEN_WIDTH, config::SCREEN_HEIGHT}), config::WINDOW_TITLE);
+    manager.pushScene(new scenes::MenuScene(manager));
     while (manager.isRunning()) {
         manager.handleEvents();
         manager.update();

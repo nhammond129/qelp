@@ -17,7 +17,7 @@ namespace scenes {
  */
 class SceneManager {
 public:
-    SceneManager(IScene* first_scene, const sf::VideoMode& video_mode, const std::string& title);
+    SceneManager(const sf::VideoMode& video_mode, const std::string& title);
     ~SceneManager();
 
     void draw();
@@ -26,6 +26,8 @@ public:
 
     void pushScene(IScene* scene);
     void popScene();
+
+    sf::RenderWindow& window();
 
     bool isRunning() const;
     void quit();
