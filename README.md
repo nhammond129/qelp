@@ -31,11 +31,11 @@ cmake --build build --target docs
 
 ## Dependencies
 ----
- * [SFML](https://github.com/SFML/SFML)
- * [imgui](https://github.com/ocornut/imgui)
- * [imgui-sfml](https://github.com/SFML/imgui-sfml)
- * [entt](https://github.com/skypjack/entt)
- * [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css)
+ * Multimedia Library:  [SFML](https://github.com/SFML/SFML)
+ * Immediate-mode UI:   [imgui](https://github.com/ocornut/imgui)
+ * ImGui backend:       [imgui-sfml](https://github.com/SFML/imgui-sfml)
+ * ECS Framework:       [entt](https://github.com/skypjack/entt)
+ * Documentation theme: [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css)
 
 ## Asset Attribution
 [`assets/fonts/victor-pixel.ttf`](https://www.dafont.com/victors-pixel-font.font)\
