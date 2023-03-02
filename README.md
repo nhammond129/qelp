@@ -30,7 +30,6 @@ cmake --build build --target docs
  * [Doxygen](https://www.doxygen.nl/manual/index.html)
 
 ## Dependencies
-----
  * Multimedia Library:  [SFML](https://github.com/SFML/SFML)
  * Immediate-mode UI:   [imgui](https://github.com/ocornut/imgui)
  * ImGui backend:       [imgui-sfml](https://github.com/SFML/imgui-sfml)
