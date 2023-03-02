@@ -18,6 +18,7 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/include/scenes"
 )
 add_subdirectory("${CMAKE_SOURCE_DIR}/extern")
+add_subdirectory("${CMAKE_SOURCE_DIR}/docs")
 
 add_executable(main)
 target_sources(main PRIVATE
