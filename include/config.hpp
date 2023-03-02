@@ -2,6 +2,11 @@
 
 #include <string>
 
+/**
+ * @brief global configuration
+ * 
+ * TODO: impl. save/load/edit functionality for this
+ **/
 namespace config {
 
 static std::string CONFIG_FILE = "config.ini";
@@ -11,7 +16,7 @@ static uint32_t SCREEN_HEIGHT = 900;
 static uint32_t MAX_FPS = 144;
 // TODO
 // impl. with SettingsScene ?
-// static std::unordered_map<ActionEvent, std::vector<InputEvent>> GAME_KEYBINDS; ?
+// static std::unordered_map<InputEvent, std::vector<Action>> GAME_KEYBINDS; ?
 
 
 /*
