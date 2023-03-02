@@ -39,12 +39,31 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
 }
 
 void GameScene::handleEvent(const sf::Event& event) {
+    static struct {
+        sf::Vector2i lastpos;
+        bool active = false;
+    } drag;
     if (mManager.window().hasFocus() == false) return;
 
     if (event.type == sf::Event::KeyReleased) {
         if (event.key.code == sf::Keyboard::Escape) {
             mManager.popScene();
         }
+    } else if (event.type == sf::Event::MouseWheelScrolled) {
+        auto view = mWorldRT.getView();
+        view.zoom(1.f - event.mouseWheelScroll.delta * 0.1f);
+        mWorldRT.setView(view);
+    } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Middle) {
+        drag.lastpos = {event.mouseButton.x, event.mouseButton.y};
+        drag.active = true;
+    } else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Middle) {
+        drag.active = false;
+    } else if (event.type == sf::Event::MouseMoved && drag.active) {
+        auto view = mWorldRT.getView();
+        sf::Vector2f motionDelta = mWorldRT.mapPixelToCoords(drag.lastpos) - mWorldRT.mapPixelToCoords({event.mouseMove.x, event.mouseMove.y});
+        view.move(motionDelta);
+        mWorldRT.setView(view);
+        drag.lastpos = {event.mouseMove.x, event.mouseMove.y};
     }
 }
 
