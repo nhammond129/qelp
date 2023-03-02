@@ -4,6 +4,14 @@
 #include <scenes.hpp>
 #include <util.hpp>
 
+namespace {
+
+struct ComponentTest {
+    int b;
+};
+
+};  // anonymous namespace
+
 namespace scenes {
 
 GameScene::GameScene(SceneManager& manager) : IScene(manager) {
@@ -25,6 +33,9 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
     auto view = mWorldRT.getView();
     view.setCenter(mShipSprite.getPosition());
     mWorldRT.setView(view);
+
+    const auto entity = mRegistry.create();
+    mRegistry.emplace<ComponentTest>(entity, 69420);
 }
 
 void GameScene::handleEvent(const sf::Event& event) {
@@ -81,6 +92,12 @@ void GameScene::update(const sf::Time& dt) {
     ImGui::Begin("Ship");
     ImGui::Text("Position: (%.2f, %.2f)", mShipSprite.getPosition().x, mShipSprite.getPosition().y);
     ImGui::Text("Rotation (deg): %.2f", mShipSprite.getRotation().asDegrees());
+    ImGui::End();
+
+    ImGui::Begin("ComponentTest instances");
+    mRegistry.view<ComponentTest>().each([](const auto& entity, const auto& component) {
+        ImGui::Text("Entity %d: %d", entity, component.b);
+    });
     ImGui::End();
 }
 

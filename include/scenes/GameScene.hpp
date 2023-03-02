@@ -1,6 +1,7 @@
 #pragma once
 
 #include <IScene.hpp>
+#include <entt/entt.hpp>
 
 namespace scenes {
 
@@ -21,6 +22,8 @@ private:
     sf::RenderTexture mWorldRT;
 
     sf::Font mFont;
+
+    entt::registry mRegistry;
 };
 
 };  // namespace scenes
