@@ -5,12 +5,14 @@ INPUT                 += @CMAKE_CURRENT_SOURCE_DIR@/
 
 FILE_PATTERNS          = *.h *.hpp *.c *.cpp *.dox *.md
 EXCLUDE_PATTERNS       = */doxygen-awesome-css/*
+EXCLUDE_PATTERNS      += */extern/*
+EXCLUDE_PATTERNS      += */include/entt/*
 RECURSIVE              = YES
 
 GENERATE_TREEVIEW      = YES
 DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
-HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/doxygen-awesome-css/doxygen-awesome.css
+HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/../extern/doxygen-awesome-css/doxygen-awesome.css
 HTML_COLORSTYLE        = LIGHT
 
 GENERATE_HTML          = YES

@@ -1,13 +1,3 @@
-include(FetchContent)
-FetchContent_Declare(
-    doxygen-awesome-css
-    SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/docs/doxygen-awesome-css"
-    GIT_REPOSITORY  "https://github.com/jothepro/doxygen-awesome-css.git"
-    GIT_TAG         "a7f7891706c656903326f79baf74beb2b711688d" # v2.2.0
-    GIT_SHALLOW     TRUE
-    GIT_PROGRESS    TRUE
-)
-
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     FetchContent_MakeAvailable(doxygen-awesome-css)
