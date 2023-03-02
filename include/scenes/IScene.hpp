@@ -15,12 +15,18 @@ class SceneManager;
  */
 class IScene {
 protected:
-    sf::Clock mClock;       /** Unused? */
-    SceneManager& mManager; /** Reference to the parent scene manager */
+    /**
+     * @brief Unused?
+     **/
+    sf::Clock mClock;
+    /**
+     * @brief Reference to the parent scene manager
+     **/
+    SceneManager& mManager;
 
 public:
-    IScene() = delete;               /** no default constructor **/
-    IScene(const IScene&) = delete;  /** no copy-constructor    **/
+    IScene() = delete;               // no default constructor
+    IScene(const IScene&) = delete;  // no copy-constructor
 
     /**
      * @brief Constructor.
