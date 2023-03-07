@@ -31,8 +31,30 @@ sf::Texture programmerArtTexture(float width, float height, const sf::Color colo
 
     rt.display();
 
-    // explicit clone
-    return sf::Texture {rt.getTexture()};
+    return rt.getTexture();
+}
+
+sf::Texture programmerArtTexture(float width, float height, const sf::Color color, const sf::Color background, const std::vector<sf::Vector2f> &points) {
+    sf::RenderTexture rt;
+    if (!rt.create({(unsigned int)width, (unsigned int)height})) throw std::runtime_error("Error creating render texture");
+
+    // baseline
+    sf::Texture baseline = programmerArtTexture(width, height, color, background);
+    sf::Sprite sprite(baseline);
+    rt.draw(sprite);
+
+    // mark a little yellow x on each point
+    sf::VertexArray lines(sf::PrimitiveType::Lines, points.size() * 4);
+    for (const auto& p : points) {
+        lines.append({{p.x - 2, p.y - 2}, sf::Color::Yellow});
+        lines.append({{p.x + 2, p.y + 2}, sf::Color::Yellow});
+        lines.append({{p.x - 2, p.y + 2}, sf::Color::Yellow});
+        lines.append({{p.x + 2, p.y - 2}, sf::Color::Yellow});
+    }
+    rt.draw(lines);
+    rt.display();
+
+    return rt.getTexture();
 }
 
 };  // namespace util
