@@ -4,12 +4,14 @@ _idk what I'm doing edition_
 
 ## Table of Contents
 1. [Building](#building)
-    1. [Documentation](#documentation)
+    1. [Source](#source)
+    2. [Documentation](#documentation)
 2. [See also](#see-also)
 3. [Dependencies](#dependencies)
 4. [Asset Attribution](#asset-attribution)
 
 ## Building
+### Source
 ```bash
 cmake -S . -B build     # generate the build files
 cmake --build build     # build the project
