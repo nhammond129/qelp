@@ -23,6 +23,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/docs")
 add_executable(main)
 target_sources(main PRIVATE
     "${SOURCE_DIR}/main.cpp"
+    "${SOURCE_DIR}/input/input.cpp"
     "${SOURCE_DIR}/scenes/SceneManager.cpp"
     "${SOURCE_DIR}/scenes/GameScene.cpp"
     "${SOURCE_DIR}/scenes/MenuScene.cpp"
