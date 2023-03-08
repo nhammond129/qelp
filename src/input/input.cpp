@@ -4,6 +4,11 @@
 namespace input {
 
 std::optional<Action> getAction(const sf::Event& event) {
+    /**
+     * This function is a bit of a mess, the crux of the issue lies
+     * in the sf::Event union and that we have N actions and M events,
+     * with each event needing slightly different handling for a given action.
+     **/
     switch (event.type) {
         case sf::Event::MouseWheelScrolled: {
             for (const auto& [actiont, wheel] : config::bindings::mousewheels) {
