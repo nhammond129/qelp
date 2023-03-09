@@ -25,4 +25,9 @@ namespace util {
         const std::vector<sf::Vector2f>& points = {}
     );
 
+    // As cursed as it would be, I kind of wish I could inject this as a member function of sf::RenderTarget.
+    // Because I wanna.
+    void setViewCenter(sf::RenderTarget& target, const sf::Vector2f& center);
+    void moveViewCenter(sf::RenderTarget& target, const sf::Vector2f& offset);
+
 };  // namespace util

@@ -47,4 +47,16 @@ sf::Texture& programmerArtTexture(float width, float height, const sf::Color col
     return static_textures.front();
 }
 
+void setViewCenter(sf::RenderTarget& target, const sf::Vector2f& center) {
+    auto view = target.getView();
+    view.setCenter(center);
+    target.setView(view);
+}
+
+void moveViewCenter(sf::RenderTarget& target, const sf::Vector2f& offset) {
+    auto view = target.getView();
+    view.move(offset);
+    target.setView(view);
+}
+
 };  // namespace util
