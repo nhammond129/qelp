@@ -42,9 +42,9 @@ sf::Texture& programmerArtTexture(float width, float height, const sf::Color col
     }
 
     rt.display();
-    static_textures.emplace_back(rt.getTexture());
+    static_textures.emplace_front(rt.getTexture());
 
-    return static_textures.back();
+    return static_textures.front();
 }
 
 };  // namespace util
