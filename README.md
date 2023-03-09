@@ -30,6 +30,9 @@ cmake --build build --target docs
  * [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/)
  * [SFML Documentation](https://www.sfml-dev.org/documentation/2.5.1/modules.php)
  * [Doxygen](https://www.doxygen.nl/manual/index.html)
+ * [entt wiki](https://github.com/skypjack/entt/wiki/)
+   * [entt wiki: Views](https://github.com/skypjack/entt/wiki/Crash-Course:-entity-component-system#views)
+   * [entt wiki: Resource Management](https://github.com/skypjack/entt/wiki/Crash-Course:-resource-management)
 
 ## Dependencies
  * Multimedia Library:  [SFML](https://github.com/SFML/SFML)
