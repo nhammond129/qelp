@@ -14,6 +14,7 @@ public:
 private:
     sf::Font mFont;  // TODO: `AssetManager&` -- injected ?
     sf::Text mText;
+    sf::Text mText2;
 };
 
 };  // namespace scenes

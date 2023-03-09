@@ -10,6 +10,12 @@ MenuScene::MenuScene(SceneManager& manager) : IScene(manager) {
 
     mText = sf::Text("Hello World!", mFont, 30);
     mText.setPosition({100.f, 100.f});
+
+    mText2 = sf::Text("press `G` to swap to game scene", mFont, 14);
+    mText2.setPosition({100.f,
+        mText.getGlobalBounds().top + mText.getGlobalBounds().height  // bottom of text rect
+        + 2.f  // padding
+    });
 }
 
 void MenuScene::handleEvent(const sf::Event& event) {
@@ -30,6 +36,7 @@ void MenuScene::update(const sf::Time& dt) {
 
 void MenuScene::draw(sf::RenderWindow& window) {
     window.draw(mText);
+    window.draw(mText2);
 }
 
 };  // namespace scenes
