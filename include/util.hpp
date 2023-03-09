@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <exception>
+#include <imgui.h>
 
 /**
  * general utility and miscellaneous functions
