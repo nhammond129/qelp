@@ -129,8 +129,8 @@ void GameScene::handleEvent(const sf::Event& event) {
 
 void GameScene::update(const sf::Time& dt) {
     static bool doTrack = true;
-    util::RAIITimed raii("GameScene::update");
-    { util::RAIITimed raii("GameScene::update::movement");
+    util::RAIITimed raii("update");
+    { util::RAIITimed raii("update::movement");
     mRegistry.view<PlayerActionQueue, sf::Sprite>().each([this, dt](PlayerActionQueue& queue, sf::Sprite& sprite) {
         // Iterating components that both have a PlayerActionQueue and a sf::Sprite.
         if (queue.actions.empty()) return;
@@ -157,7 +157,7 @@ void GameScene::update(const sf::Time& dt) {
     });
     }
 
-    { util::RAIITimed raii("GameScene::update::turrets");
+    { util::RAIITimed raii("update::turrets");
     mRegistry.view<Turrets, sf::Sprite>().each([this, dt](Turrets& turrets, sf::Sprite& sprite) {
         for (auto& turret : turrets.turrets) {
             auto& turretSprite = mRegistry.get<sf::Sprite>(turret.entity);
@@ -174,7 +174,7 @@ void GameScene::update(const sf::Time& dt) {
     });
     }
 
-    { util::RAIITimed raii("GameScene::update::view_tracking");
+    { util::RAIITimed raii("update::view_tracking");
     if (doTrack) {
         mRegistry.view<ParentedView, sf::Sprite>().each([this](ParentedView& view, sf::Sprite& sprite) {
             view.set_center(sprite.getPosition());
@@ -182,7 +182,7 @@ void GameScene::update(const sf::Time& dt) {
     }
     }
 
-    { util::RAIITimed raii("GameScene::update::debug");
+    { util::RAIITimed raii("update::debug");
 
     // just quickly set position for the debug window
     ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, (float)config::SCREEN_HEIGHT/2.f}, ImGuiCond_Once, {1.f, 0.5f});
@@ -215,17 +215,17 @@ void GameScene::update(const sf::Time& dt) {
 }
 
 void GameScene::draw(sf::RenderWindow& window) {
-    util::RAIITimed raii("GameScene::draw");
+    util::RAIITimed raii("draw");
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
-        util::RAIITimed raii("GameScene::draw::world");
-        { util::RAIITimed raii("GameScene::draw::world::sprites");
+        util::RAIITimed raii("draw::world");
+        { util::RAIITimed raii("draw::world::sprites");
         mRegistry.view<const sf::Sprite>().each([&rt](const auto& sprite) {
             rt.draw(sprite);
         });
         }
-        { util::RAIITimed raii("GameScene::draw::world::debug");
+        { util::RAIITimed raii("draw::world::debug");
         mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;
             if (queue.actions.empty()) return;
@@ -234,7 +234,7 @@ void GameScene::draw(sf::RenderWindow& window) {
                 switch (action.type) {
                     case PlayerActionQueue::Action::Type::Move: {
                         // draw line from 'ship' to position
-                        util::RAIITimed* tmp = new util::RAIITimed("GameScene::draw::world::debug (sf::VertexArray c'tor)");
+                        util::RAIITimed* tmp = new util::RAIITimed("draw::world::debug (sf::VertexArray c'tor)");
                         sf::VertexArray line(sf::PrimitiveType::Lines, 2);
                         delete tmp;
                         line[0].position = lastpos;
