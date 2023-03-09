@@ -5,9 +5,9 @@
 namespace util {
 
 sf::Texture& programmerArtTexture(float width, float height, const sf::Color color, const sf::Color background, const std::vector<sf::Vector2f> &points) {
-    std::vector<sf::Texture> static_textures;  // static so that the textures are not destroyed when the function returns
-                                               // this is dangerous, but since it's temporary it'll suffice for now.
-                                               // TODO: Remove.
+    static std::forward_list<sf::Texture> static_textures;  // static so that the textures are not destroyed when the function returns
+                                                            // This is dangerous, but it's okay as a temporary measure until I can figure out a better way to do this
+                                                            // TODO: remove. This is just asking for wasted memory.
     sf::RenderTexture rt;
     if (!rt.create({(unsigned int)width, (unsigned int)height})) throw std::runtime_error("Error creating render texture");
 
