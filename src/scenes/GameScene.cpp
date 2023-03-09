@@ -8,12 +8,8 @@
 
 namespace {
 
-struct ComponentTest {
-    int b;
-};
-
-struct ShipActionQueue {
-    struct ShipAction {
+struct PlayerActionQueue {
+    struct Action {
         struct Move {
             sf::Vector2f pos;
         };
@@ -25,7 +21,30 @@ struct ShipActionQueue {
             Move move;
         };
     };
-    std::queue<ShipAction> actions;
+    std::queue<Action> actions;
+};
+
+struct Turrets {
+    struct Turret {
+        entt::entity entity;
+        sf::Vector2f offset;
+    };
+    std::vector<Turret> turrets;
+};
+
+struct ParentedView {
+    sf::RenderTarget& target;
+    void set_center(sf::Vector2f center) {
+        // this is dumb, I want
+        //     `sf::View& sf::RenderTarget::getMutableView()`
+        // or
+        //     `sf::RenderTarget::setViewCenter(sf::Vector2f)`
+        // >:(
+        // (maybe I'm just lazy)
+        auto view = target.getView();
+        view.setCenter(center);
+        target.setView(view);
+    }
 };
 
 };  // anonymous namespace
@@ -38,23 +57,26 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
     if (!mFont.loadFromFile("assets/fonts/victor-pixel.ttf"))
         throw std::runtime_error("Error loading font: 'assets/fonts/victor-pixel.ttf'");
 
-    mShipTexture = util::programmerArtTexture(128, 96, sf::Color::Magenta);
-    mShipSprite.setTexture(mShipTexture);
-    mShipSprite.setOrigin({mShipTexture.getSize().x / 2.f, mShipTexture.getSize().y / 2.f});
+    const auto turret_entity = mRegistry.create();
+    {
+        sf::Sprite& turretSprite = mRegistry.emplace<sf::Sprite>(turret_entity, util::programmerArtTexture(32, 32, sf::Color::Yellow));
+        auto tx_size = turretSprite.getTexture()->getSize();
+        turretSprite.setOrigin({tx_size.x / 2.f, tx_size.y / 2.f});
+    }
 
-    mShipTurretTexture = util::programmerArtTexture(32, 32, sf::Color::Yellow);
-    mTurretSprite.setTexture(mShipTurretTexture);
-    mTurretSprite.setOrigin({mShipTurretTexture.getSize().x / 2.f, mShipTurretTexture.getSize().y / 2.f});
+    const auto player_ship = mRegistry.create();
+    {
+        mRegistry.emplace<PlayerActionQueue>(player_ship);
+        mRegistry.emplace<ParentedView>(player_ship, mWorldRT);
+        sf::Sprite& mShipSprite = mRegistry.emplace<sf::Sprite>(player_ship, util::programmerArtTexture(128, 96, sf::Color::Magenta));
+        auto tx_size = mShipSprite.getTexture()->getSize();
+        mShipSprite.setOrigin({tx_size.x / 2.f, tx_size.y / 2.f});
 
-    mTurretOffset = {-mShipSprite.getLocalBounds().width * 0.3f, 0.f};
+        Turrets& turrets = mRegistry.emplace<Turrets>(player_ship);
+        turrets.turrets.push_back({turret_entity, {mShipSprite.getLocalBounds().width * -0.3f, 0.f}});
+    }
 
-    auto view = mWorldRT.getView();
-    view.setCenter(mShipSprite.getPosition());
-    mWorldRT.setView(view);
 
-    const auto entity = mRegistry.create();
-    mRegistry.emplace<ComponentTest>(entity, 69420);
-    mRegistry.emplace<ShipActionQueue>(entity);
 }
 
 void GameScene::handleEvent(const sf::Event& event) {
@@ -88,53 +110,103 @@ void GameScene::handleEvent(const sf::Event& event) {
         }
         case input::Action::Type::MoveClick: {
             sf::Vector2f pos = mWorldRT.mapPixelToCoords(action.move.pos);
-            mRegistry.view<ShipActionQueue>().each([&pos](ShipActionQueue& queue) {
+            mRegistry.view<PlayerActionQueue>().each([&pos](PlayerActionQueue& queue) {
                 queue.actions.push( {
-                    .type = ShipActionQueue::ShipAction::Type::Move,
+                    .type = PlayerActionQueue::Action::Type::Move,
                     .move = {pos},
                 });
             });
             break;
         }
     }
-    if (event.type == sf::Event::MouseMoved && drag.active) {
+
+    // drag-click logic
+    // TODO: move this to input::getAction ?
+    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Middle) {
+        drag.active = true;
+        drag.lastpos = {event.mouseButton.x, event.mouseButton.y};
+    } else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Button::Middle) {
+        drag.active = false;
+    } else if (event.type == sf::Event::MouseMoved && drag.active) {
         auto view = mWorldRT.getView();
         sf::Vector2f motionDelta = mWorldRT.mapPixelToCoords(drag.lastpos) - mWorldRT.mapPixelToCoords({event.mouseMove.x, event.mouseMove.y});
         view.move(motionDelta);
-        mWorldRT.setView(view);
+        //mWorldRT.setView(view);
         drag.lastpos = {event.mouseMove.x, event.mouseMove.y};
     }
 }
 
 void GameScene::update(const sf::Time& dt) {
-
-    // angle between turret and cursor
-    float turretAngle;
-    {
-        sf::Vector2i mousePos = sf::Mouse::getPosition(mManager.window());
-        sf::Vector2f turretPos = mTurretSprite.getPosition();
-        auto turretToMouse = mWorldRT.mapPixelToCoords(mousePos) - turretPos;
-        turretAngle = std::atan2(turretToMouse.y, turretToMouse.x);
-    }
-    mTurretSprite.setPosition(mShipSprite.getPosition() + mTurretOffset.rotatedBy(mShipSprite.getRotation()));
-    mTurretSprite.setRotation(sf::radians(turretAngle));
-
-    ImGui::ShowDemoWindow();
-
-    ImGui::Begin("Ship");
-    ImGui::Text("Position: (%.2f, %.2f)", mShipSprite.getPosition().x, mShipSprite.getPosition().y);
-    ImGui::Text("Rotation (deg): %.2f", mShipSprite.getRotation().asDegrees());
-    ImGui::End();
-
-    ImGui::Begin("ComponentTest instances");
-    mRegistry.view<const ComponentTest>().each([](const auto& entity, const auto& component) {
-        ImGui::Text("Entity %d: %d", entity, component.b);
+    mRegistry.view<PlayerActionQueue, sf::Sprite>().each([this, dt](PlayerActionQueue& queue, sf::Sprite& sprite) {
+        // Iterating components that both have a PlayerActionQueue and a sf::Sprite.
+        if (queue.actions.empty()) return;
+        auto& action = queue.actions.front();
+        switch (action.type) {
+            case PlayerActionQueue::Action::Type::Move: {
+                auto& move = action.move;
+                auto to = move.pos;
+                auto from = sprite.getPosition();
+                auto delta = to - from;
+                auto dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+                if (dist < 1.f) {
+                    queue.actions.pop();
+                    break;
+                }
+                auto dir = delta / dist;
+                auto speed = 100.f;
+                auto moveDelta = dir * speed * dt.asSeconds();
+                sprite.move(moveDelta);
+                sprite.setRotation(sf::radians(std::atan2(dir.y, dir.x)));
+                break;
+            }
+        }
     });
+
+    mRegistry.view<Turrets, sf::Sprite>().each([this, dt](Turrets& turrets, sf::Sprite& sprite) {
+        for (auto& turret : turrets.turrets) {
+            auto& turretSprite = mRegistry.get<sf::Sprite>(turret.entity);
+            turretSprite.setPosition(sprite.getPosition() + turret.offset.rotatedBy(sprite.getRotation()));
+            float turretAngle;
+            {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(mManager.window());
+                sf::Vector2f turretPos = turretSprite.getPosition();
+                auto turretToMouse = mWorldRT.mapPixelToCoords(mousePos) - turretPos;
+                turretAngle = std::atan2(turretToMouse.y, turretToMouse.x);
+            }
+            turretSprite.setRotation(sf::radians(turretAngle));
+        }
+    });
+
+    static bool doTrack = true;
+    if (doTrack) {
+        mRegistry.view<ParentedView, sf::Sprite>().each([this](ParentedView& view, sf::Sprite& sprite) {
+            view.set_center(sprite.getPosition());
+        });
+    }
+
+    ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, 0.f}, ImGuiCond_Once, {1.f, 0.f});
+    ImGui::Begin("view tracking");
+    ImGui::Checkbox("Track player ship", &doTrack);
     ImGui::End();
 
-    ImGui::Begin("ShipActionQueue instances");
-    mRegistry.view<const ShipActionQueue>().each([](const auto& entity, const auto& queue) {
-        ImGui::Text("Entity %d: %d actions deep", entity, queue.actions.size());
+    ImGui::Begin("PlayerActionQueue instances");
+    mRegistry.view<const PlayerActionQueue>().each([](const auto entity, const auto& queue) {
+        bool open = ImGui::TreeNode(std::format("Entity {}", (uint32_t)entity).c_str());
+        ImGui::Text("Queue depth: %d", queue.actions.size());
+        if (open) {
+            std::queue<PlayerActionQueue::Action> copyq = queue.actions;
+            while (!copyq.empty()) {
+                auto action = copyq.front();
+                switch (action.type) {
+                    case PlayerActionQueue::Action::Type::Move: {
+                        ImGui::Text("Move to (%f, %f)", action.move.pos.x, action.move.pos.y);
+                        break;
+                    }
+                }
+                copyq.pop();
+            }
+            ImGui::TreePop();
+        }
     });
     ImGui::End();
 }
@@ -143,15 +215,18 @@ void GameScene::draw(sf::RenderWindow& window) {
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
-        mRegistry.view<const ShipActionQueue>().each([this](const auto& queue) {
+        mRegistry.view<const sf::Sprite>().each([&rt](const auto& sprite) {
+            rt.draw(sprite);
+        });
+        mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;
             if (queue.actions.empty()) return;
-            std::queue<ShipActionQueue::ShipAction> copyq = queue.actions;
-            sf::Vector2f lastpos = mShipSprite.getPosition();
+            std::queue<PlayerActionQueue::Action> copyq = queue.actions;
+            sf::Vector2f lastpos = sprite.getPosition();
             while (!copyq.empty()) {
                 auto action = copyq.front();
                 switch (action.type) {
-                    case ShipActionQueue::ShipAction::Type::Move: {
+                    case PlayerActionQueue::Action::Type::Move: {
                         // draw line from 'ship' to position
                         sf::VertexArray line(sf::PrimitiveType::Lines, 2);
                         line[0].position = lastpos;
@@ -174,8 +249,6 @@ void GameScene::draw(sf::RenderWindow& window) {
                 copyq.pop();
             }
         });
-        rt.draw(mShipSprite);
-        rt.draw(mTurretSprite);
     }
     rt.display();
 
