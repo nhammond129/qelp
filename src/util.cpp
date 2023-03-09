@@ -12,11 +12,12 @@ sf::Texture& programmerArtTexture(float width, float height, const sf::Color col
     if (!rt.create({(unsigned int)width, (unsigned int)height})) throw std::runtime_error("Error creating render texture");
 
     // colored border
-    sf::RectangleShape rect({width-2, height-2});
+    constexpr uint8_t border = 2;
+    sf::RectangleShape rect({width-(2*border), height-(2*border)});
     rect.setOutlineColor(color);
-    rect.setOutlineThickness(1);
+    rect.setOutlineThickness(border);
     rect.setFillColor(background);
-    rect.setPosition({1, 1});
+    rect.setPosition({border, border});
     rt.draw(rect);
 
     {   // draw arrow in the 'middle', pointing 'right' from x=0 to x=width
