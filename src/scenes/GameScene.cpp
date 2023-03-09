@@ -21,7 +21,7 @@ struct PlayerActionQueue {
             Move move;
         };
     };
-    std::queue<Action> actions;
+    std::list<Action> actions;
 };
 
 struct Turrets {
@@ -103,7 +103,7 @@ void GameScene::handleEvent(const sf::Event& event) {
             case input::Action::Type::MoveClick: {
                 sf::Vector2f pos = mWorldRT.mapPixelToCoords(action.move.pos);
                 mRegistry.view<PlayerActionQueue>().each([&pos](PlayerActionQueue& queue) {
-                    queue.actions.push( {
+                    queue.actions.push_back( {
                         .type = PlayerActionQueue::Action::Type::Move,
                         .move = {pos},
                     });
@@ -128,6 +128,9 @@ void GameScene::handleEvent(const sf::Event& event) {
 }
 
 void GameScene::update(const sf::Time& dt) {
+    static bool doTrack = true;
+    util::RAIITimed raii("GameScene::update");
+    { util::RAIITimed raii("GameScene::update::movement");
     mRegistry.view<PlayerActionQueue, sf::Sprite>().each([this, dt](PlayerActionQueue& queue, sf::Sprite& sprite) {
         // Iterating components that both have a PlayerActionQueue and a sf::Sprite.
         if (queue.actions.empty()) return;
@@ -140,7 +143,7 @@ void GameScene::update(const sf::Time& dt) {
                 auto delta = to - from;
                 auto dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
                 if (dist < 1.f) {
-                    queue.actions.pop();
+                    queue.actions.pop_front();
                     break;
                 }
                 auto dir = delta / dist;
@@ -152,7 +155,9 @@ void GameScene::update(const sf::Time& dt) {
             }
         }
     });
+    }
 
+    { util::RAIITimed raii("GameScene::update::turrets");
     mRegistry.view<Turrets, sf::Sprite>().each([this, dt](Turrets& turrets, sf::Sprite& sprite) {
         for (auto& turret : turrets.turrets) {
             auto& turretSprite = mRegistry.get<sf::Sprite>(turret.entity);
@@ -167,13 +172,22 @@ void GameScene::update(const sf::Time& dt) {
             turretSprite.setRotation(sf::radians(turretAngle));
         }
     });
+    }
 
-    static bool doTrack = true;
+    { util::RAIITimed raii("GameScene::update::view_tracking");
     if (doTrack) {
         mRegistry.view<ParentedView, sf::Sprite>().each([this](ParentedView& view, sf::Sprite& sprite) {
             view.set_center(sprite.getPosition());
         });
     }
+    }
+
+    { util::RAIITimed raii("GameScene::update::debug");
+
+    // just quickly set position for the debug window
+    ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, (float)config::SCREEN_HEIGHT/2.f}, ImGuiCond_Once, {1.f, 0.5f});
+    ImGui::Begin("debug"); ImGui::End();
+
 
     ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, 0.f}, ImGuiCond_Once, {1.f, 0.f});
     ImGui::Begin("view tracking");
@@ -185,37 +199,38 @@ void GameScene::update(const sf::Time& dt) {
         bool open = ImGui::TreeNode(std::format("Entity {}", (uint32_t)entity).c_str());
         ImGui::Text("Queue depth: %d", queue.actions.size());
         if (open) {
-            std::queue<PlayerActionQueue::Action> copyq = queue.actions;
-            while (!copyq.empty()) {
-                auto action = copyq.front();
+            for (const auto& action : queue.actions) {
                 switch (action.type) {
                     case PlayerActionQueue::Action::Type::Move: {
                         ImGui::Text("Move to (%f, %f)", action.move.pos.x, action.move.pos.y);
                         break;
                     }
                 }
-                copyq.pop();
             }
             ImGui::TreePop();
         }
     });
     ImGui::End();
+    }
 }
 
 void GameScene::draw(sf::RenderWindow& window) {
+    util::RAIITimed raii("GameScene::draw");
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
+        util::RAIITimed raii("GameScene::draw::world");
+        { util::RAIITimed raii("GameScene::draw::world::sprites");
         mRegistry.view<const sf::Sprite>().each([&rt](const auto& sprite) {
             rt.draw(sprite);
         });
+        }
+        { util::RAIITimed raii("GameScene::draw::world::debug");
         mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;
             if (queue.actions.empty()) return;
-            std::queue<PlayerActionQueue::Action> copyq = queue.actions;
             sf::Vector2f lastpos = sprite.getPosition();
-            while (!copyq.empty()) {
-                auto action = copyq.front();
+            for (const auto& action : queue.actions) {
                 switch (action.type) {
                     case PlayerActionQueue::Action::Type::Move: {
                         // draw line from 'ship' to position
@@ -237,9 +252,9 @@ void GameScene::draw(sf::RenderWindow& window) {
                         break;
                     }
                 }
-                copyq.pop();
             }
         });
+        }
     }
     rt.display();
 
