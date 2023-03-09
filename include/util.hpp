@@ -74,7 +74,7 @@ namespace util {
             #if 1
             if (oafs[name]) {
                 ImGui::Begin("debug");
-                ImGui::Columns(2, "timings", false);
+                ImGui::Columns(2, "timings", true);  // legacy columns api
                 ImGui::Text("%s", name.c_str());
                 ImGui::NextColumn();
                 if (delta <= std::chrono::microseconds(1000)) {
@@ -86,6 +86,7 @@ namespace util {
                 } else {
                     ImGui::TextColored(ImVec4{1.f, 0.f, 0.f, 1.f}, "%3d s", std::chrono::duration_cast<seconds>(delta).count());
                 }
+                ImGui::Columns(1);
                 ImGui::End();
             }
             #endif

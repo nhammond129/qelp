@@ -234,14 +234,14 @@ void GameScene::draw(sf::RenderWindow& window) {
                 switch (action.type) {
                     case PlayerActionQueue::Action::Type::Move: {
                         // draw line from 'ship' to position
-                        util::RAIITimed* tmp = new util::RAIITimed("draw::world::debug (sf::VertexArray c'tor)");
+                        util::RAIITimed* tmp = new util::RAIITimed("draw::world::debug (sf::VertexArray)");
                         sf::VertexArray line(sf::PrimitiveType::Lines, 2);
-                        delete tmp;
                         line[0].position = lastpos;
                         line[1].position = action.move.pos;
                         line[0].color = sf::Color::Green;
                         line[1].color = sf::Color::Green;
                         rt.draw(line);
+                        delete tmp;
                         // draw circle at position
                         sf::CircleShape circle(5.f);
                         circle.setOrigin({5.f, 5.f});
