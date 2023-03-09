@@ -35,15 +35,7 @@ struct Turrets {
 struct ParentedView {
     sf::RenderTarget& target;
     void set_center(sf::Vector2f center) {
-        // this is dumb, I want
-        //     `sf::View& sf::RenderTarget::getMutableView()`
-        // or
-        //     `sf::RenderTarget::setViewCenter(sf::Vector2f)`
-        // >:(
-        // (maybe I'm just lazy)
-        auto view = target.getView();
-        view.setCenter(center);
-        target.setView(view);
+        util::setViewCenter(target, center);
     }
 };
 
@@ -87,36 +79,37 @@ void GameScene::handleEvent(const sf::Event& event) {
     if (mManager.window().hasFocus() == false) return;
 
     std::optional<input::Action> maybe_action = input::getAction(event);
-    if (!maybe_action) return;
-    input::Action& action = *maybe_action;
-    switch (action.type) {
-        case input::Action::Type::ZoomIn: {
-            auto view = mWorldRT.getView();
-            view.zoom(1.f - action.zoom.amount * 0.1f);
-            mWorldRT.setView(view);
-            break;
-        }
-        case input::Action::Type::ZoomOut: {
-            auto view = mWorldRT.getView();
-            view.zoom(1.f + action.zoom.amount * 0.1f);
-            mWorldRT.setView(view);
-            break;
-        }
-        case input::Action::Type::ZoomReset: {
-            auto view = mWorldRT.getView();
-            view.setSize({(float)mManager.window().getSize().x, (float)mManager.window().getSize().y});
-            mWorldRT.setView(view);
-            break;
-        }
-        case input::Action::Type::MoveClick: {
-            sf::Vector2f pos = mWorldRT.mapPixelToCoords(action.move.pos);
-            mRegistry.view<PlayerActionQueue>().each([&pos](PlayerActionQueue& queue) {
-                queue.actions.push( {
-                    .type = PlayerActionQueue::Action::Type::Move,
-                    .move = {pos},
+    if (maybe_action) {
+        input::Action& action = *maybe_action;
+        switch (action.type) {
+            case input::Action::Type::ZoomIn: {
+                auto view = mWorldRT.getView();
+                view.zoom(1.f - action.zoom.amount * 0.1f);
+                mWorldRT.setView(view);
+                break;
+            }
+            case input::Action::Type::ZoomOut: {
+                auto view = mWorldRT.getView();
+                view.zoom(1.f + action.zoom.amount * 0.1f);
+                mWorldRT.setView(view);
+                break;
+            }
+            case input::Action::Type::ZoomReset: {
+                auto view = mWorldRT.getView();
+                view.setSize({(float)mManager.window().getSize().x, (float)mManager.window().getSize().y});
+                mWorldRT.setView(view);
+                break;
+            }
+            case input::Action::Type::MoveClick: {
+                sf::Vector2f pos = mWorldRT.mapPixelToCoords(action.move.pos);
+                mRegistry.view<PlayerActionQueue>().each([&pos](PlayerActionQueue& queue) {
+                    queue.actions.push( {
+                        .type = PlayerActionQueue::Action::Type::Move,
+                        .move = {pos},
+                    });
                 });
-            });
-            break;
+                break;
+            }
         }
     }
 
@@ -128,10 +121,8 @@ void GameScene::handleEvent(const sf::Event& event) {
     } else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Button::Middle) {
         drag.active = false;
     } else if (event.type == sf::Event::MouseMoved && drag.active) {
-        auto view = mWorldRT.getView();
         sf::Vector2f motionDelta = mWorldRT.mapPixelToCoords(drag.lastpos) - mWorldRT.mapPixelToCoords({event.mouseMove.x, event.mouseMove.y});
-        view.move(motionDelta);
-        //mWorldRT.setView(view);
+        util::moveViewCenter(mWorldRT, motionDelta);
         drag.lastpos = {event.mouseMove.x, event.mouseMove.y};
     }
 }
