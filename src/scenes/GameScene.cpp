@@ -142,7 +142,7 @@ void GameScene::update(const sf::Time& dt) {
                 auto from = sprite.getPosition();
                 auto delta = to - from;
                 auto dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
-                if (dist < 1.f) {
+                if (dist < 5.f) {
                     queue.actions.pop_front();
                     break;
                 }
@@ -229,32 +229,30 @@ void GameScene::draw(sf::RenderWindow& window) {
         mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;
             if (queue.actions.empty()) return;
-            sf::Vector2f lastpos = sprite.getPosition();
+            sf::VertexArray lines(sf::PrimitiveType::LineStrip, queue.actions.size() + 1);
+            lines[0] = {sprite.getPosition(), sf::Color::Green};
+            int idx = 1;
             for (const auto& action : queue.actions) {
+                util::RAIITimed raii("draw::world::debug::action");
                 switch (action.type) {
                     case PlayerActionQueue::Action::Type::Move: {
                         // draw line from 'ship' to position
-                        util::RAIITimed* tmp = new util::RAIITimed("draw::world::debug (sf::VertexArray)");
-                        sf::VertexArray line(sf::PrimitiveType::Lines, 2);
-                        line[0].position = lastpos;
-                        line[1].position = action.move.pos;
-                        line[0].color = sf::Color::Green;
-                        line[1].color = sf::Color::Green;
-                        rt.draw(line);
-                        delete tmp;
+                        lines[idx++] = {action.move.pos, sf::Color::Green};
+                        /*
                         // draw circle at position
                         sf::CircleShape circle(5.f);
                         circle.setOrigin({5.f, 5.f});
                         circle.setPosition(action.move.pos);
                         circle.setFillColor(sf::Color::Transparent);
                         circle.setOutlineColor(sf::Color::Green);
-                        circle.setOutlineThickness(1.0f);
+                        circle.setOutlineThickness(2.0f);
                         rt.draw(circle);
-                        lastpos = action.move.pos;
+                        */
                         break;
                     }
                 }
             }
+            rt.draw(lines);
         });
         }
     }
