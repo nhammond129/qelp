@@ -1,4 +1,7 @@
 #define _USE_MATH_DEFINES
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
+#include <SFML/Window.hpp>
 #include <config.hpp>
 #include <exception>
 #include <imgui-SFML.h>
@@ -6,9 +9,6 @@
 #include <iostream>
 #include <math.h>
 #include <scenes.hpp>
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
-#include <SFML/Window.hpp>
 #include <string>
 #include <util.hpp>
 

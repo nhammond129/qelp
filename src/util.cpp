@@ -1,6 +1,7 @@
-#include <util.hpp>
 #include <SFML/Graphics.hpp>
 #include <exception>
+#include <forward_list>
+#include <util.hpp>
 
 namespace util {
 
