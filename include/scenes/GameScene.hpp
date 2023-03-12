@@ -16,9 +16,9 @@ public:
 
     void fixed_update(const sf::Time& dt );
 private:
+    const sf::Font& mFont = data::Fonts["fonts/victor-pixel.ttf"];
     bool mViewTracking = true;
     sf::RenderTexture mWorldRT;
-    sf::Font mFont;
     entt::registry mRegistry;
 };
 

@@ -47,8 +47,6 @@ namespace scenes {
 GameScene::GameScene(SceneManager& manager) : IScene(manager) {
     if (!mWorldRT.create(manager.window().getSize()))
         throw std::runtime_error("Error creating render texture");
-    if (!mFont.loadFromFile("assets/fonts/victor-pixel.ttf"))
-        throw std::runtime_error("Error loading font: 'assets/fonts/victor-pixel.ttf'");
 
     const auto turret_entity = mRegistry.create();
     {
