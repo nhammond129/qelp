@@ -1,10 +1,11 @@
-#include <scenes.hpp>
 #include <config.hpp>
 #include <imgui.h>
+#include <scenes.hpp>
 
 namespace scenes {
 
 MenuScene::MenuScene(SceneManager& manager) : IScene(manager) {
+    
     if (!mFont.loadFromFile("assets/fonts/victor-pixel.ttf"))
         throw std::runtime_error("Error loading font: 'assets/fonts/victor-pixel.ttf'");
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <IScene.hpp>
+#include <data/cached.hpp>
 
 namespace scenes {
 
@@ -12,7 +13,7 @@ public:
     void update(const sf::Time& dt) override;
     void handleEvent(const sf::Event& event) override;
 private:
-    sf::Font mFont;  // TODO: `AssetManager&` -- injected ?
+    const sf::Font& mFont = data::Fonts["fonts/victor-pixel.ttf"];
     sf::Text mText;
     sf::Text mText2;
 };
