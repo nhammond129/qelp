@@ -164,7 +164,6 @@ void GameScene::update(const sf::Time& dt) {
             elapsed -= mFixedUpdateInterval;
         }
     }
-    static bool doTrack = true;
     mRegistry.view<Turrets, sf::Sprite>().each([this, dt](Turrets& turrets, sf::Sprite& sprite) {
         for (auto& turret : turrets.turrets) {
             auto& turretSprite = mRegistry.get<sf::Sprite>(turret.entity);
@@ -180,14 +179,11 @@ void GameScene::update(const sf::Time& dt) {
         }
     });
 
-    if (doTrack) {
+    if (mViewTracking) {
         mRegistry.view<ParentedView, sf::Sprite>().each([this](ParentedView& view, sf::Sprite& sprite) {
             view.set_center(sprite.getPosition());
         });
     }
-
-    { util::RAIITimed raii("update::debug");
-
     // just quickly set position for the debug window
     ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, (float)config::SCREEN_HEIGHT/2.f}, ImGuiCond_Once, {1.f, 0.5f});
     ImGui::Begin("debug"); ImGui::End();
@@ -195,7 +191,7 @@ void GameScene::update(const sf::Time& dt) {
 
     ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, 0.f}, ImGuiCond_Once, {1.f, 0.f});
     ImGui::Begin("view tracking");
-    ImGui::Checkbox("Track player ship", &doTrack);
+    ImGui::Checkbox("Track player ship", &mViewTracking);
     ImGui::End();
 
     ImGui::Begin("PlayerActionQueue instances");
@@ -215,21 +211,15 @@ void GameScene::update(const sf::Time& dt) {
         }
     });
     ImGui::End();
-    }
 }
 
 void GameScene::draw(sf::RenderWindow& window) {
-    util::RAIITimed raii("draw");
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
-        util::RAIITimed raii("draw::world");
-        { util::RAIITimed raii("draw::world::sprites");
         mRegistry.view<const sf::Sprite>().each([&rt](const auto& sprite) {
             rt.draw(sprite);
         });
-        }
-        { util::RAIITimed raii("draw::world::debug");
         mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;
             if (queue.actions.empty()) return;
@@ -248,10 +238,8 @@ void GameScene::draw(sf::RenderWindow& window) {
             }
             rt.draw(lines);
         });
-        }
     }
     rt.display();
-
     window.draw(sf::Sprite(rt.getTexture()));
 }
 

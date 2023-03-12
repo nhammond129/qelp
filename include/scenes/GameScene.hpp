@@ -16,6 +16,7 @@ public:
 
     void fixed_update(const sf::Time& dt );
 private:
+    bool mViewTracking = true;
     sf::RenderTexture mWorldRT;
     sf::Font mFont;
     entt::registry mRegistry;
