@@ -23,10 +23,9 @@ const std::string executable_path() {
 #elif __APPLE__
     char result[PATH_MAX];
     uint32_t size = sizeof(result);
-    if (_NSGetExecutablePath(result, &size) == 0)
-        return std::string(result);
-    else
+    if (_NSGetExecutablePath(result, &size) != 0)
         throw std::runtime_error("Error getting executable path");
+    return std::string(result);
 #elif _WIN32
     char result[PATH_MAX];
     if (!GetModuleFileNameA(NULL, result, PATH_MAX))
