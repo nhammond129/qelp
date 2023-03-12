@@ -36,3 +36,15 @@ target_link_libraries(main PRIVATE
     IMGUI
     ImGui-SFML::ImGui-SFML
 )
+
+set(ASSETS
+    "${CMAKE_SOURCE_DIR}/assets/fonts/victor-pixel.ttf"
+    "${CMAKE_SOURCE_DIR}/assets/sprites/space_carrier_0.png"
+)
+foreach(ASSET ${ASSETS})
+    add_custom_command(TARGET main PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${ASSET}
+            $<TARGET_FILE_DIR:main>
+    )
+endforeach()
