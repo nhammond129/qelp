@@ -67,7 +67,7 @@ struct Cache {
     }
 };
 
-Cache<sf::Texture> Textures;
-Cache<sf::Font> Fonts;
+inline static Cache<sf::Texture> Textures;
+inline static Cache<sf::Font> Fonts;
 
 };  // namespace data

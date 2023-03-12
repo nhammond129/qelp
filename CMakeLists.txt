@@ -24,9 +24,9 @@ add_executable(main)
 target_sources(main PRIVATE
     "${SOURCE_DIR}/main.cpp"
     "${SOURCE_DIR}/input/input.cpp"
-    "${SOURCE_DIR}/scenes/SceneManager.cpp"
     "${SOURCE_DIR}/scenes/GameScene.cpp"
     "${SOURCE_DIR}/scenes/MenuScene.cpp"
+    "${SOURCE_DIR}/scenes/SceneManager.cpp"
     "${SOURCE_DIR}/util.cpp"
 )
 target_link_libraries(main PRIVATE
@@ -38,13 +38,13 @@ target_link_libraries(main PRIVATE
 )
 
 set(ASSETS
-    "${CMAKE_SOURCE_DIR}/assets/fonts/victor-pixel.ttf"
-    "${CMAKE_SOURCE_DIR}/assets/sprites/space_carrier_0.png"
+    "fonts/victor-pixel.ttf"
+    "sprites/space_carrier_0.png"
 )
 foreach(ASSET ${ASSETS})
     add_custom_command(TARGET main PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${ASSET}
-            $<TARGET_FILE_DIR:main>
+            "${CMAKE_SOURCE_DIR}/assets/${ASSET}"
+            "$<TARGET_FILE_DIR:main>/${ASSET}"
     )
 endforeach()

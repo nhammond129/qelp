@@ -227,7 +227,6 @@ void GameScene::draw(sf::RenderWindow& window) {
             lines[0] = {sprite.getPosition(), sf::Color::Green};
             int idx = 1;
             for (const auto& action : queue.actions) {
-                util::RAIITimed raii("draw::world::debug::action");
                 switch (action.type) {
                     case PlayerActionQueue::Action::Type::Move: {
                         // draw line from 'ship' to position

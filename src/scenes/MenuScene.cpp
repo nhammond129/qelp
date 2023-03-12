@@ -5,10 +5,6 @@
 namespace scenes {
 
 MenuScene::MenuScene(SceneManager& manager) : IScene(manager) {
-    
-    if (!mFont.loadFromFile("assets/fonts/victor-pixel.ttf"))
-        throw std::runtime_error("Error loading font: 'assets/fonts/victor-pixel.ttf'");
-
     mText = sf::Text("Hello World!", mFont, 30);
     mText.setPosition({100.f, 100.f});
 
