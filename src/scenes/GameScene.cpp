@@ -48,23 +48,45 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
     if (!mWorldRT.create(manager.window().getSize()))
         throw std::runtime_error("Error creating render texture");
 
-    const auto turret_entity = mRegistry.create();
-    {
-        sf::Sprite& turretSprite = mRegistry.emplace<sf::Sprite>(turret_entity, util::programmerArtTexture(32, 32, sf::Color::Yellow));
-        auto tx_size = turretSprite.getTexture()->getSize();
-        turretSprite.setOrigin({tx_size.x / 2.f, tx_size.y / 2.f});
-    }
+    auto turretBuilder = [this]() {
+        const auto turret_entity = mRegistry.create();
+        {
+            sf::Sprite& turretSprite = mRegistry.emplace<sf::Sprite>(turret_entity, data::Textures["sprites/turret1.png"]);
+            auto tx_size = turretSprite.getTexture()->getSize();
+            turretSprite.setOrigin({18, 20});
+        }
+        return turret_entity;
+    };
 
     const auto player_ship = mRegistry.create();
     {
         mRegistry.emplace<PlayerActionQueue>(player_ship);
         mRegistry.emplace<ParentedView>(player_ship, mWorldRT);
-        sf::Sprite& mShipSprite = mRegistry.emplace<sf::Sprite>(player_ship, util::programmerArtTexture(128, 96, sf::Color::Magenta));
+        sf::Sprite& mShipSprite = mRegistry.emplace<sf::Sprite>(player_ship, data::Textures["sprites/ship1.png"]);
         auto tx_size = mShipSprite.getTexture()->getSize();
         mShipSprite.setOrigin({tx_size.x / 2.f, tx_size.y / 2.f});
 
         Turrets& turrets = mRegistry.emplace<Turrets>(player_ship);
-        turrets.turrets.push_back({turret_entity, {mShipSprite.getLocalBounds().width * -0.3f, 0.f}});
+        turrets.turrets.push_back({
+            turretBuilder(),
+            (sf::Vector2f {168, 71} - mShipSprite.getOrigin())
+        });
+        turrets.turrets.push_back({
+            turretBuilder(),
+            (sf::Vector2f {263, 27} - mShipSprite.getOrigin())
+        });
+        turrets.turrets.push_back({
+            turretBuilder(),
+            (sf::Vector2f {168, 150} - mShipSprite.getOrigin())
+        });
+        turrets.turrets.push_back({
+            turretBuilder(),
+            (sf::Vector2f {263, 195} - mShipSprite.getOrigin())
+        });
+        turrets.turrets.push_back({
+            turretBuilder(),
+            (sf::Vector2f {450, 23} - mShipSprite.getOrigin())
+        });
     }
 
     mManager.window().setFramerateLimit(config::MAX_FPS);
@@ -215,9 +237,13 @@ void GameScene::draw(sf::RenderWindow& window) {
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
-        mRegistry.view<const sf::Sprite>().each([&rt](const auto& sprite) {
-            rt.draw(sprite);
-        });
+        // reverse-iterate, so most newly-constructed renders first.
+        // TODO: z-indexing for sprites
+        auto spriteview = mRegistry.view<const sf::Sprite>();
+        for (auto it = spriteview.rbegin(); it != spriteview.rend(); ++it) {
+            rt.draw(mRegistry.get<const sf::Sprite>(*it));
+        }
+
         mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;
             if (queue.actions.empty()) return;

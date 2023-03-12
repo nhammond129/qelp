@@ -37,9 +37,10 @@ target_link_libraries(main PRIVATE
     ImGui-SFML::ImGui-SFML
 )
 
-set(ASSETS
-    "fonts/victor-pixel.ttf"
-    "sprites/space_carrier_0.png"
+file(GLOB_RECURSE ASSETS
+    CONFIGURE_DEPENDS
+    RELATIVE "${CMAKE_SOURCE_DIR}/assets/"
+    "${CMAKE_SOURCE_DIR}/assets/*"
 )
 foreach(ASSET ${ASSETS})
     add_custom_command(TARGET main PRE_BUILD
