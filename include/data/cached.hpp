@@ -17,14 +17,16 @@ const std::string executable_path() {
 #ifdef __linux__
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    return std::string(result, (count > 0) ? count : 0);
+    if (count < 0)
+        throw std::runtime_error("Error getting executable path");
+    return std::string(result, count);
 #elif __APPLE__
     char result[PATH_MAX];
     uint32_t size = sizeof(result);
     if (_NSGetExecutablePath(result, &size) == 0)
         return std::string(result);
     else
-        return std::string();
+        throw std::runtime_error("Error getting executable path");
 #elif _WIN32
     char result[PATH_MAX];
     if (!GetModuleFileNameA(NULL, result, PATH_MAX))
