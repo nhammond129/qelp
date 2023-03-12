@@ -2,7 +2,7 @@ FetchContent_Declare(
     SFML
     SOURCE_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/SFML"
     GIT_REPOSITORY "https://github.com/SFML/SFML.git"
-    GIT_TAG        "474de4d16e570b9cb4258d85d5f9142a26e22202" # master (feb 21, 2023)
+    GIT_TAG        "90f05ac" # master (March 12, 2023)
     GIT_SHALLOW    TRUE
     GIT_PROGRESS   TRUE
 )
@@ -10,7 +10,7 @@ FetchContent_Declare(
     ImGui-SFML
     SOURCE_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/imgui-sfml"
     GIT_REPOSITORY "https://github.com/SFML/imgui-sfml.git"
-    GIT_TAG        "f0d8f72f073b367e9506b8794158cc91f015252e" # master (feb 20, 2023)
+    GIT_TAG        "f0d8f72" # master (March 12, 2023)
     GIT_SHALLOW    TRUE
     GIT_PROGRESS   TRUE
 )
@@ -18,7 +18,7 @@ FetchContent_Declare(
     imgui
     SOURCE_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/imgui"
     GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
-    GIT_TAG        "458a1090314a965dd37b02c918d83077a0142ad5" # 1.89.3
+    GIT_TAG        "458a109" # 1.89.3
     GIT_SHALLOW    TRUE
     GIT_PROGRESS   TRUE
 )
@@ -26,7 +26,7 @@ FetchContent_Declare(
     doxygen-awesome-css
     SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/doxygen-awesome-css"
     GIT_REPOSITORY  "https://github.com/jothepro/doxygen-awesome-css.git"
-    GIT_TAG         "a7f7891706c656903326f79baf74beb2b711688d" # v2.2.0
+    GIT_TAG         "a7f7891" # v2.2.0
     GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
 )
