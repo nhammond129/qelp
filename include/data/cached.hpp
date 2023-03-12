@@ -43,6 +43,24 @@ struct Cache {
 
     Map mCache;
 
+    /**
+     * @brief Load a resource from the given filepath.
+     * @param path The path to the file.
+     * @return A reference to the loaded file's resource.
+     * @throws std::runtime_error if the file could not be loaded.
+     * @note If the resource has already been loaded, the cached version will be returned.
+     * @note The path is relative to the executable's directory.
+     * 
+     * Example:
+     * @code
+     * // ${CMAKE_BINARY_DIR}
+     * // ├─ main
+     * // ├─ textures
+     * // │  └─ player.png
+     * Cache<sf::Texture> Textures;
+     * const auto& texture = Textures.load("textures/player.png");
+     * @endcode
+     **/
     const T& load(const std::string& path) {
         auto it = mCache.find(path);
         if (it != mCache.end())
