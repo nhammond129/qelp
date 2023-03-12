@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 #include <SFML/Graphics.hpp>
 #ifdef __linux__
 #include <unistd.h>
@@ -54,11 +53,6 @@ struct Cache {
         mCache[path] = ptr;
         return *ptr;
     }
-
-    const T& load(const std::filesystem::path& path) {
-        return load(path.string());
-    }
-
     void clear() {
         mCache.clear();
     }
