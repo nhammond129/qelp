@@ -9,6 +9,7 @@
 namespace {
 
 struct PlayerActionQueue {
+    static const uint32_t MAX_DEPTH = 64;
     struct Action {
         struct Move {
             sf::Vector2f pos;
@@ -107,6 +108,8 @@ void GameScene::handleEvent(const sf::Event& event) {
                         .type = PlayerActionQueue::Action::Type::Move,
                         .move = {pos},
                     });
+                    if (queue.actions.size() > PlayerActionQueue::MAX_DEPTH)
+                        queue.actions.pop_front();
                 });
                 break;
             }
@@ -127,37 +130,41 @@ void GameScene::handleEvent(const sf::Event& event) {
     }
 }
 
-void GameScene::update(const sf::Time& dt) {
-    static bool doTrack = true;
-    util::RAIITimed raii("update");
-    { util::RAIITimed raii("update::movement");
+void GameScene::fixed_update(const sf::Time& dt) {
     mRegistry.view<PlayerActionQueue, sf::Sprite>().each([this, dt](PlayerActionQueue& queue, sf::Sprite& sprite) {
-        // Iterating components that both have a PlayerActionQueue and a sf::Sprite.
+        // Iterating components that both have a PlayerActionQueue and an sf::Sprite.
         if (queue.actions.empty()) return;
         auto& action = queue.actions.front();
         switch (action.type) {
             case PlayerActionQueue::Action::Type::Move: {
-                auto& move = action.move;
-                auto to = move.pos;
-                auto from = sprite.getPosition();
-                auto delta = to - from;
-                auto dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+                const auto to = action.move.pos;
+                const auto from = sprite.getPosition();
+                const auto delta = to - from;
+                const auto dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
                 if (dist < 5.f) {
                     queue.actions.pop_front();
                     break;
                 }
-                auto dir = delta / dist;
-                auto speed = 100.f;
-                auto moveDelta = dir * speed * dt.asSeconds();
+                const auto dir = delta / dist;
+                const auto speed = 100.f;
+                const auto moveDelta = dir * speed * dt.asSeconds();
                 sprite.move(moveDelta);
                 sprite.setRotation(sf::radians(std::atan2(dir.y, dir.x)));
                 break;
             }
         }
     });
-    }
+}
 
-    { util::RAIITimed raii("update::turrets");
+void GameScene::update(const sf::Time& dt) {
+    {   // fixed update (physics)
+        sf::Time elapsed = dt;
+        while (elapsed > sf::Time::Zero) {
+            fixed_update(std::min(mFixedUpdateInterval, elapsed));
+            elapsed -= mFixedUpdateInterval;
+        }
+    }
+    static bool doTrack = true;
     mRegistry.view<Turrets, sf::Sprite>().each([this, dt](Turrets& turrets, sf::Sprite& sprite) {
         for (auto& turret : turrets.turrets) {
             auto& turretSprite = mRegistry.get<sf::Sprite>(turret.entity);
@@ -172,14 +179,11 @@ void GameScene::update(const sf::Time& dt) {
             turretSprite.setRotation(sf::radians(turretAngle));
         }
     });
-    }
 
-    { util::RAIITimed raii("update::view_tracking");
     if (doTrack) {
         mRegistry.view<ParentedView, sf::Sprite>().each([this](ParentedView& view, sf::Sprite& sprite) {
             view.set_center(sprite.getPosition());
         });
-    }
     }
 
     { util::RAIITimed raii("update::debug");
@@ -238,16 +242,6 @@ void GameScene::draw(sf::RenderWindow& window) {
                     case PlayerActionQueue::Action::Type::Move: {
                         // draw line from 'ship' to position
                         lines[idx++] = {action.move.pos, sf::Color::Green};
-                        /*
-                        // draw circle at position
-                        sf::CircleShape circle(5.f);
-                        circle.setOrigin({5.f, 5.f});
-                        circle.setPosition(action.move.pos);
-                        circle.setFillColor(sf::Color::Transparent);
-                        circle.setOutlineColor(sf::Color::Green);
-                        circle.setOutlineThickness(2.0f);
-                        rt.draw(circle);
-                        */
                         break;
                     }
                 }
