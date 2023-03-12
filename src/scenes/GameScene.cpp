@@ -69,7 +69,7 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
         turrets.turrets.push_back({turret_entity, {mShipSprite.getLocalBounds().width * -0.3f, 0.f}});
     }
 
-
+    mManager.window().setFramerateLimit(config::MAX_FPS);
 }
 
 void GameScene::handleEvent(const sf::Event& event) {

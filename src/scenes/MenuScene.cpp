@@ -1,39 +1,71 @@
 #include <config.hpp>
 #include <imgui.h>
+#include <iostream>
 #include <scenes.hpp>
 
 namespace scenes {
 
 MenuScene::MenuScene(SceneManager& manager) : IScene(manager) {
-    mText = sf::Text("Hello World!", mFont, 30);
-    mText.setPosition({100.f, 100.f});
+    mOptions = {
+        Option(sf::Text("Play", mFont, 30), [this](){
+            mManager.pushScene(new GameScene(mManager));
+        }),
+        Option(sf::Text("Settings", mFont, 30), [](){
+            // TODO: Settings menu
+            std::cout << "<Settings>" << std::endl;
+        }),
+        Option(sf::Text("Exit", mFont, 30), [this](){
+            mManager.quit();
+        }),
+    };
 
-    mText2 = sf::Text("press `G` to swap to game scene", mFont, 14);
-    mText2.setPosition({100.f,
-        mText.getGlobalBounds().top + mText.getGlobalBounds().height  // bottom of text rect
-        + 2.f  // padding
-    });
+    mManager.window().setFramerateLimit(60);
 }
 
 void MenuScene::handleEvent(const sf::Event& event) {
     if (mManager.window().hasFocus() == false) return;
-    
-    if (event.type == sf::Event::KeyReleased) {
-        if (event.key.code == sf::Keyboard::G) {
-            mManager.pushScene(new GameScene(mManager));
+
+    if (event.type == sf::Event::MouseMoved) {
+        sf::Vector2f pos = {(float)event.mouseMove.x, (float)event.mouseMove.y};
+        for (auto& opt : mOptions) {
+            if (opt.text.getGlobalBounds().contains(pos))
+                opt.text.setString("> " + opt.name + " <");
+            else 
+                opt.text.setString(opt.name);
+        }
+    } else if (event.type == sf::Event::MouseButtonPressed) {
+        sf::Vector2f pos = {(float)event.mouseButton.x, (float)event.mouseButton.y};
+        for (auto& opt : mOptions) {
+            if (opt.text.getGlobalBounds().contains(pos)) {
+                opt.hot = true;
+                opt.text.setFillColor(sf::Color::Red);
+            }
+        }
+    } else if (event.type == sf::Event::MouseButtonReleased) {
+        sf::Vector2f pos = {(float)event.mouseButton.x, (float)event.mouseButton.y};
+        for (auto& opt : mOptions) {
+            if (opt.text.getGlobalBounds().contains(pos) && opt.hot) {
+                opt.callback();
+            }
+            opt.hot = false;
+            opt.text.setFillColor(sf::Color::White);
         }
     }
 }
 
 void MenuScene::update(const sf::Time& dt) {
-    mText.setString("Hello World! " + std::to_string(1/(dt.asSeconds())) + " FPS");
-
+    sf::Vector2f anchor = mAnchor;
+    for (auto& opt : mOptions) {
+        opt.text.setPosition(anchor);
+        anchor.y += opt.text.getGlobalBounds().height + mSpacing;
+    }
     ImGui::ShowDemoWindow();
 }
 
 void MenuScene::draw(sf::RenderWindow& window) {
-    window.draw(mText);
-    window.draw(mText2);
+    for (auto& opt : mOptions) {
+        window.draw(opt.text);
+    }
 }
 
 };  // namespace scenes
