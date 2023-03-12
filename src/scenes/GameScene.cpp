@@ -200,7 +200,7 @@ void GameScene::update(const sf::Time& dt) {
 
     ImGui::Begin("PlayerActionQueue instances");
     mRegistry.view<const PlayerActionQueue>().each([](const auto entity, const auto& queue) {
-        bool open = ImGui::TreeNode(std::format("Entity {}", (uint32_t)entity).c_str());
+        bool open = ImGui::TreeNode(("Entity #" + std::to_string((uint32_t)entity)).c_str());
         ImGui::Text("Queue depth: %d", queue.actions.size());
         if (open) {
             for (const auto& action : queue.actions) {
