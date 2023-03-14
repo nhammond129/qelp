@@ -43,5 +43,4 @@ cmake --build build --target docs
  * Documentation theme: [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css)
 
 ## Asset Attribution
-[`assets/fonts/victor-pixel.ttf`](https://www.dafont.com/victors-pixel-font.font)\
-[`assets/sprites/space_carrier_0.png`](https://opengameart.org/content/space-carrier)
+[`assets/fonts/victor-pixel.ttf`](https://www.dafont.com/victors-pixel-font.font)
