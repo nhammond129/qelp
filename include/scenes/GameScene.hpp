@@ -1,7 +1,8 @@
 #pragma once
 
-#include <IScene.hpp>
+#include <data/cached.hpp>
 #include <entt/entt.hpp>
+#include <IScene.hpp>
 
 namespace scenes {
 
