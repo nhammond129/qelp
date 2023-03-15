@@ -33,6 +33,14 @@ struct Turrets {
     std::vector<Turret> turrets;
 };
 
+struct Drawable {
+    sf::Drawable& drawable;
+};
+
+struct Transformable {
+    sf::Transformable& transformable;
+};
+
 struct ParentedView {
     sf::RenderTarget& target;
     void set_center(sf::Vector2f center) {
@@ -48,6 +56,13 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
     if (!mWorldRT.create(manager.window().getSize()))
         throw std::runtime_error("Error creating render texture");
 
+    // construct Transformable components from an existing sf::Sprite component
+    // in hindsight, this is a little cursed. Cute, but cursed.
+    // I should just stick to more conventional components.
+    // Also, Transformable and Drawable could 
+    util::add_dependent_iface<sf::Sprite, Transformable>(mRegistry);
+    util::add_dependent_iface<sf::Sprite, Drawable>(mRegistry);       // and similarly for Drawable
+
     auto turretBuilder = [this]() {
         const auto turret_entity = mRegistry.create();
         {
@@ -58,35 +73,24 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
         return turret_entity;
     };
 
+    sf::Sprite shipSprite(data::Textures["sprites/ship1.png"]);
+    auto tx_size = shipSprite.getTexture()->getSize();
+    shipSprite.setOrigin({tx_size.x / 2.f, tx_size.y / 2.f});
+
+    std::vector<Turrets::Turret> turrets = {
+        {turretBuilder(), (sf::Vector2f {168,  71} - shipSprite.getOrigin())},
+        {turretBuilder(), (sf::Vector2f {263,  27} - shipSprite.getOrigin())},
+        {turretBuilder(), (sf::Vector2f {168, 150} - shipSprite.getOrigin())},
+        {turretBuilder(), (sf::Vector2f {263, 195} - shipSprite.getOrigin())},
+        {turretBuilder(), (sf::Vector2f {450,  23} - shipSprite.getOrigin())}
+    };
+
     const auto player_ship = mRegistry.create();
     {
         mRegistry.emplace<PlayerActionQueue>(player_ship);
         mRegistry.emplace<ParentedView>(player_ship, mWorldRT);
-        sf::Sprite& mShipSprite = mRegistry.emplace<sf::Sprite>(player_ship, data::Textures["sprites/ship1.png"]);
-        auto tx_size = mShipSprite.getTexture()->getSize();
-        mShipSprite.setOrigin({tx_size.x / 2.f, tx_size.y / 2.f});
-
-        Turrets& turrets = mRegistry.emplace<Turrets>(player_ship);
-        turrets.turrets.push_back({
-            turretBuilder(),
-            (sf::Vector2f {168, 71} - mShipSprite.getOrigin())
-        });
-        turrets.turrets.push_back({
-            turretBuilder(),
-            (sf::Vector2f {263, 27} - mShipSprite.getOrigin())
-        });
-        turrets.turrets.push_back({
-            turretBuilder(),
-            (sf::Vector2f {168, 150} - mShipSprite.getOrigin())
-        });
-        turrets.turrets.push_back({
-            turretBuilder(),
-            (sf::Vector2f {263, 195} - mShipSprite.getOrigin())
-        });
-        turrets.turrets.push_back({
-            turretBuilder(),
-            (sf::Vector2f {450, 23} - mShipSprite.getOrigin())
-        });
+        mRegistry.emplace<sf::Sprite>(player_ship, shipSprite);
+        mRegistry.emplace<Turrets>(player_ship, turrets);
     }
 
     mManager.window().setFramerateLimit(config::MAX_FPS);
@@ -237,12 +241,10 @@ void GameScene::draw(sf::RenderWindow& window) {
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
-        // reverse-iterate, so most newly-constructed renders first.
         // TODO: z-indexing for sprites
-        auto spriteview = mRegistry.view<const sf::Sprite>();
-        for (auto it = spriteview.rbegin(); it != spriteview.rend(); ++it) {
-            rt.draw(mRegistry.get<const sf::Sprite>(*it));
-        }
+        mRegistry.view<const Drawable>().each([&](const auto& drawable) {
+            rt.draw(drawable.drawable);
+        });
 
         mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;

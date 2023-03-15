@@ -1,14 +1,27 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <entt/entt.hpp>
 #include <exception>
 #include <imgui.h>
+#include <SFML/Graphics.hpp>
 #include <vector>
 
 /**
  * general utility and miscellaneous functions
  **/
 namespace util {
+
+    /**
+     * @brief Helper for adding interface component dependencies
+     **/
+    template <typename Parent, typename Dependent>
+    void add_dependent_iface(entt::registry& registry) {
+        registry.on_construct<Parent>().connect<
+            [](entt::registry& registry, entt::entity entity) {
+                registry.emplace<Dependent>(entity, registry.get<Parent>(entity));
+            }>();
+    
+    }
 
     /**
      * @brief programmer art texture generation
