@@ -34,6 +34,7 @@ cmake --build build --target docs
    * [entt wiki: Views](https://github.com/skypjack/entt/wiki/Crash-Course:-entity-component-system#views)
    * [entt wiki: Resource Management](https://github.com/skypjack/entt/wiki/Crash-Course:-resource-management)
  * [imgui manual](https://pthom.github.io/imgui_manual_online/manual/imgui_manual.html)
+ * [luacpp](https://github.com/jordanvrtanoski/luacpp)
 
 ## Dependencies
  * Multimedia Library:  [SFML](https://github.com/SFML/SFML)
