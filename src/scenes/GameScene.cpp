@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include <config.hpp>
 #include <imgui.h>
 #include <iostream>
@@ -7,6 +8,21 @@
 #include <util.hpp>
 
 namespace {
+
+entt::entity create_asteroid(entt::registry& registry, sf::Vector2f pos, float radius) {
+    const auto asteroid_entity = registry.create();
+    {
+        sf::ConvexShape& asteroidShape = registry.emplace<sf::ConvexShape>(asteroid_entity, sf::ConvexShape(16));
+        asteroidShape.setPosition(pos);
+        asteroidShape.setTexture(&data::Textures["textures/asteroid.png"]);
+        for (int i = 0; i < asteroidShape.getPointCount(); ++i) {
+            float angle = static_cast<float>((i / (float)asteroidShape.getPointCount()) * 2 * M_PI);
+            float r = radius * (0.8f + 0.2f * ((float)rand() / RAND_MAX));
+            asteroidShape.setPoint(i, {r * cos(angle), r * sin(angle)});
+        }
+    }
+    return asteroid_entity;
+}
 
 struct PlayerActionQueue {
     static const uint32_t MAX_DEPTH = 64;
@@ -48,6 +64,11 @@ struct ParentedView {
     }
 };
 
+/*
+struct Velocity {
+    sf::Vector2f vel;
+};*/
+
 };  // anonymous namespace
 
 namespace scenes {
@@ -56,12 +77,19 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
     if (!mWorldRT.create(manager.window().getSize()))
         throw std::runtime_error("Error creating render texture");
 
-    // construct Transformable components from an existing sf::Sprite component
-    // in hindsight, this is a little cursed. Cute, but cursed.
-    // I should just stick to more conventional components.
-    // Also, Transformable and Drawable could 
+    mFPSText.setFont(mFont);
+    mFPSText.setCharacterSize(16);
+    mFPSText.setFillColor(sf::Color::White);
+    mFPSText.setPosition({
+        config::SCREEN_WIDTH/2.f,
+        0
+    });
+
     util::add_dependent_iface<sf::Sprite, Transformable>(mRegistry);
-    util::add_dependent_iface<sf::Sprite, Drawable>(mRegistry);       // and similarly for Drawable
+    util::add_dependent_iface<sf::Sprite, Drawable>(mRegistry);
+    util::add_dependent_iface<sf::ConvexShape, Drawable>(mRegistry);
+    util::add_dependent_iface<sf::ConvexShape, Transformable>(mRegistry);
+    util::add_dependent_iface<sf::Text, Drawable>(mRegistry);
 
     auto turretBuilder = [this]() {
         const auto turret_entity = mRegistry.create();
@@ -93,6 +121,11 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
         mRegistry.emplace<Turrets>(player_ship, turrets);
     }
 
+    // create some asteroids
+    for (int i = 0; i < 50; ++i) {
+        create_asteroid(mRegistry, {(float) (rand()%10000), (float) (rand()%10000)}, 100.f);
+    }
+
     mManager.window().setFramerateLimit(config::MAX_FPS);
 }
 
@@ -102,6 +135,19 @@ void GameScene::handleEvent(const sf::Event& event) {
         bool active = false;
     } drag;
     if (mManager.window().hasFocus() == false) return;
+
+    if (event.type == sf::Event::MouseMoved) {
+        // set mCursorNearestEntity
+        sf::Vector2f mouse_pos = mWorldRT.mapPixelToCoords({event.mouseMove.x, event.mouseMove.y});
+        float min_dist = std::numeric_limits<float>::max();
+        mRegistry.view<Transformable>().each([&](auto entity, auto& c) {
+            float dist = (c.transformable.getPosition() - mouse_pos).length();
+            if (dist < min_dist) {
+                min_dist = dist;
+                mCursorNearestEntity = entity;
+            }
+        });
+    }
 
     std::optional<input::Action> maybe_action = input::getAction(event);
     if (maybe_action) {
@@ -188,6 +234,11 @@ void GameScene::update(const sf::Time& dt) {
             elapsed -= mFixedUpdateInterval;
         }
     }
+
+    // update fps text
+    mFPSText.setString(std::to_string((int)(1.f/dt.asSeconds())) + " fps");
+    mFPSText.setOrigin({mFPSText.getLocalBounds().width / 2.f, 0.f});
+
     mRegistry.view<Turrets, sf::Sprite>().each([this, dt](Turrets& turrets, sf::Sprite& sprite) {
         for (auto& turret : turrets.turrets) {
             auto& turretSprite = mRegistry.get<sf::Sprite>(turret.entity);
@@ -208,10 +259,6 @@ void GameScene::update(const sf::Time& dt) {
             view.set_center(sprite.getPosition());
         });
     }
-    // just quickly set position for the debug window
-    ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, (float)config::SCREEN_HEIGHT/2.f}, ImGuiCond_Once, {1.f, 0.5f});
-    ImGui::Begin("debug"); ImGui::End();
-
 
     ImGui::SetNextWindowPos({(float)config::SCREEN_WIDTH, 0.f}, ImGuiCond_Once, {1.f, 0.f});
     ImGui::Begin("view tracking");
@@ -242,9 +289,61 @@ void GameScene::draw(sf::RenderWindow& window) {
     rt.clear();
     {
         // TODO: z-indexing for sprites
-        mRegistry.view<const Drawable>().each([&](const auto& drawable) {
-            rt.draw(drawable.drawable);
+        mRegistry.view<const Drawable>().each([&](const entt::entity& ent, const Drawable& drawable) {
+            if (mRegistry.all_of<Transformable>(ent)) {
+                const Transformable& transform = mRegistry.get<Transformable>(ent);
+
+                auto view_rect_world = sf::FloatRect {
+                    rt.getView().getCenter() - rt.getView().getSize() / 1.5f,  // top-left
+                    rt.getView().getSize()*2.f  // size
+                };
+                if (view_rect_world.contains(transform.transformable.getPosition()))
+                    rt.draw(drawable.drawable);
+            } else {
+                // no transform component, just draw it
+                rt.draw(drawable.drawable);
+            }
         });
+
+        {
+            if (mCursorNearestEntity != entt::null) {
+
+                sf::Vector2f transformPos = mRegistry.get<Transformable>(mCursorNearestEntity).transformable.getPosition();
+                sf::Vector2f cursorWorldPos = mWorldRT.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+                sf::CircleShape circle(10.f);
+                circle.setOrigin({10.f, 10.f});
+                circle.setPosition(transformPos);
+                circle.setFillColor(sf::Color::Transparent);
+                circle.setOutlineColor(sf::Color::Red);
+                circle.setOutlineThickness(2.f);
+                rt.draw(circle);
+
+                sf::Text text;
+                text.setFont(mFont);
+                text.setString("Entity #"+std::to_string((uint32_t)mCursorNearestEntity));
+                // text.setCharacterSize(16);
+                text.setFillColor(sf::Color::Green);
+                text.setPosition(transformPos + sf::Vector2f{0.f, 10.f + text.getLocalBounds().height});
+                rt.draw(text);
+
+                sf::VertexArray lines(sf::PrimitiveType::LineStrip, 2);
+                lines[0] = {transformPos, sf::Color::Red};
+                lines[1] = {cursorWorldPos, sf::Color::Red};
+                rt.draw(lines);
+
+                if (mRegistry.all_of<Turrets>(mCursorNearestEntity)) {
+                    const auto& turrets = mRegistry.get<Turrets>(mCursorNearestEntity);
+                    for (const auto& turret : turrets.turrets) {
+                        const auto& turretSprite = mRegistry.get<sf::Sprite>(turret.entity);
+                        sf::VertexArray lines(sf::PrimitiveType::LineStrip, 2);
+                        lines[0] = {transformPos, sf::Color::Green};
+                        lines[1] = {turretSprite.getPosition(), sf::Color::Yellow};
+                        rt.draw(lines);
+                    }
+                }
+            }
+        }
 
         mRegistry.view<const PlayerActionQueue, const sf::Sprite>().each([this](const auto& queue, const auto& sprite) {
             sf::RenderTexture& rt = this->mWorldRT;
@@ -266,6 +365,7 @@ void GameScene::draw(sf::RenderWindow& window) {
     }
     rt.display();
     window.draw(sf::Sprite(rt.getTexture()));
+    window.draw(mFPSText);
 }
 
 };  // namespace scenes

@@ -17,10 +17,14 @@ public:
 
     void fixed_update(const sf::Time& dt );
 private:
+
     const sf::Font& mFont = data::Fonts["fonts/victor-pixel.ttf"];
     bool mViewTracking = true;
     sf::RenderTexture mWorldRT;
     entt::registry mRegistry;
+    sf::Text mFPSText;
+
+    entt::entity mCursorNearestEntity = entt::null;
 };
 
 };  // namespace scenes
