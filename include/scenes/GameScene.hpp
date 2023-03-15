@@ -15,7 +15,7 @@ public:
     void update(const sf::Time& dt) override;
     void handleEvent(const sf::Event& event) override;
 
-    void fixed_update(const sf::Time& dt );
+    void fixed_update(const sf::Time& dt);
 private:
 
     const sf::Font& mFont = data::Fonts["fonts/victor-pixel.ttf"];
