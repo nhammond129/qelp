@@ -9,21 +9,6 @@
 
 namespace {
 
-entt::entity create_asteroid(entt::registry& registry, sf::Vector2f pos, float radius) {
-    const auto asteroid_entity = registry.create();
-    {
-        sf::ConvexShape& asteroidShape = registry.emplace<sf::ConvexShape>(asteroid_entity, sf::ConvexShape(16));
-        asteroidShape.setPosition(pos);
-        asteroidShape.setTexture(&data::Textures["textures/asteroid.png"]);
-        for (int i = 0; i < asteroidShape.getPointCount(); ++i) {
-            float angle = static_cast<float>((i / (float)asteroidShape.getPointCount()) * 2 * M_PI);
-            float r = radius * (0.8f + 0.2f * ((float)rand() / RAND_MAX));
-            asteroidShape.setPoint(i, {r * cos(angle), r * sin(angle)});
-        }
-    }
-    return asteroid_entity;
-}
-
 struct PlayerActionQueue {
     static const uint32_t MAX_DEPTH = 64;
     struct Action {
@@ -64,10 +49,29 @@ struct ParentedView {
     }
 };
 
-/*
 struct Velocity {
-    sf::Vector2f vel;
-};*/
+    sf::Vector2f linear;
+    sf::Angle angular;
+};
+
+entt::entity create_asteroid(entt::registry& registry, sf::Vector2f pos, float radius) {
+    const auto asteroid_entity = registry.create();
+    {
+        sf::ConvexShape& asteroidShape = registry.emplace<sf::ConvexShape>(asteroid_entity, sf::ConvexShape(16));
+        asteroidShape.setPosition(pos);
+        asteroidShape.setTexture(&data::Textures["textures/asteroid.png"]);
+        for (int i = 0; i < asteroidShape.getPointCount(); ++i) {
+            float angle = static_cast<float>((i / (float)asteroidShape.getPointCount()) * 2 * M_PI);
+            float r = radius * (0.8f + 0.2f * ((float)rand() / RAND_MAX));
+            asteroidShape.setPoint(i, {r * cos(angle), r * sin(angle)});
+        }
+        // add random vel
+        auto& vel = registry.get<Velocity>(asteroid_entity);
+        vel.linear = {(float) (rand() % 100 - 50), (float) (rand() % 100 - 50)};
+        vel.angular = sf::degrees((float) (rand() % 100 - 50));
+    }
+    return asteroid_entity;
+}
 
 };  // anonymous namespace
 
@@ -90,6 +94,7 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
     util::add_dependent_iface<sf::ConvexShape, Drawable>(mRegistry);
     util::add_dependent_iface<sf::ConvexShape, Transformable>(mRegistry);
     util::add_dependent_iface<sf::Text, Drawable>(mRegistry);
+    util::add_dependent<Transformable, Velocity>(mRegistry);
 
     auto turretBuilder = [this]() {
         const auto turret_entity = mRegistry.create();
@@ -201,6 +206,12 @@ void GameScene::handleEvent(const sf::Event& event) {
 }
 
 void GameScene::fixed_update(const sf::Time& dt) {
+    mRegistry.view<Transformable, Velocity>().each(
+        [dt](Transformable& transformable, Velocity& velocity) {
+            transformable.transformable.move(velocity.linear * dt.asSeconds());
+            transformable.transformable.rotate(velocity.angular * dt.asSeconds());
+        }
+    );
     mRegistry.view<PlayerActionQueue, sf::Sprite>().each([this, dt](PlayerActionQueue& queue, sf::Sprite& sprite) {
         // Iterating components that both have a PlayerActionQueue and an sf::Sprite.
         if (queue.actions.empty()) return;

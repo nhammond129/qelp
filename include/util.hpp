@@ -13,12 +13,24 @@ namespace util {
 
     /**
      * @brief Helper for adding interface component dependencies
+     * @note This passes the instance of Parent to the constructor of Dependent
      **/
     template <typename Parent, typename Dependent>
     void add_dependent_iface(entt::registry& registry) {
         registry.on_construct<Parent>().connect<
             [](entt::registry& registry, entt::entity entity) {
                 registry.emplace<Dependent>(entity, registry.get<Parent>(entity));
+            }>();
+    }
+
+    /**
+     * @brief Helper for adding generic component dependencies
+     **/
+    template <typename Parent, typename Dependent>
+    void add_dependent(entt::registry& registry) {
+        registry.on_construct<Parent>().connect<
+            [](entt::registry& registry, entt::entity entity) {
+                registry.emplace<Dependent>(entity);
             }>();
     }
 
