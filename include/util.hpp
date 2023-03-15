@@ -20,7 +20,6 @@ namespace util {
             [](entt::registry& registry, entt::entity entity) {
                 registry.emplace<Dependent>(entity, registry.get<Parent>(entity));
             }>();
-    
     }
 
     /**
