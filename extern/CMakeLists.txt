@@ -2,7 +2,7 @@ FetchContent_Declare(
     SFML
     SOURCE_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/SFML"
     GIT_REPOSITORY "https://github.com/SFML/SFML.git"
-    GIT_TAG        "90f05ac" # master (March 12, 2023)
+    GIT_TAG        "641cf54cc34a91ebf57d43b2400ac6436c47b313" # master (March 15, 2023)
     GIT_SHALLOW    TRUE
     GIT_PROGRESS   TRUE
 )
