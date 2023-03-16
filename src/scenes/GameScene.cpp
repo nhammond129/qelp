@@ -1,4 +1,6 @@
 #define _USE_MATH_DEFINES
+#include <components/Drawable.hpp>
+#include <components/Transformable.hpp>
 #include <config.hpp>
 #include <imgui.h>
 #include <iostream>
@@ -6,9 +8,6 @@
 #include <queue>
 #include <scenes.hpp>
 #include <util.hpp>
-
-#include <components/Drawable.hpp>
-#include <components/Transformable.hpp>
 
 namespace {
 

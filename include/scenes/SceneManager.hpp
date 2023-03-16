@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include <IScene.hpp>
+#include <SFML/Graphics.hpp>
 
 namespace scenes {
 

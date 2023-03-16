@@ -1,7 +1,7 @@
-#include <scenes.hpp>
-#include <imgui.h>
-#include <imgui-SFML.h>
 #include <config.hpp>
+#include <imgui-SFML.h>
+#include <imgui.h>
+#include <scenes.hpp>
 
 namespace scenes {
 
