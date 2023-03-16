@@ -7,7 +7,15 @@
 #include <scenes.hpp>
 #include <util.hpp>
 
+#include <components/Drawable.hpp>
+#include <components/Transformable.hpp>
+
 namespace {
+
+struct Item {
+    std::string name;
+    int value;
+};
 
 struct PlayerActionQueue {
     static const uint32_t MAX_DEPTH = 64;
@@ -32,14 +40,6 @@ struct Turrets {
         sf::Vector2f offset;
     };
     std::vector<Turret> turrets;
-};
-
-struct Drawable {
-    sf::Drawable& drawable;
-};
-
-struct Transformable {
-    sf::Transformable& transformable;
 };
 
 struct ParentedView {
