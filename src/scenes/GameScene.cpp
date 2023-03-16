@@ -145,8 +145,8 @@ void GameScene::handleEvent(const sf::Event& event) {
         // set mCursorNearestEntity
         sf::Vector2f mouse_pos = mWorldRT.mapPixelToCoords({event.mouseMove.x, event.mouseMove.y});
         float min_dist = std::numeric_limits<float>::max();
-        mRegistry.view<Transformable>().each([&](auto entity, auto& c) {
-            float dist = (c.transformable.getPosition() - mouse_pos).length();
+        mRegistry.view<Transformable>().each([&](auto entity, auto& transformable) {
+            float dist = (transformable.getPosition() - mouse_pos).length();
             if (dist < min_dist) {
                 min_dist = dist;
                 mCursorNearestEntity = entity;
@@ -208,8 +208,8 @@ void GameScene::handleEvent(const sf::Event& event) {
 void GameScene::fixed_update(const sf::Time& dt) {
     mRegistry.view<Transformable, Velocity>().each(
         [dt](Transformable& transformable, Velocity& velocity) {
-            transformable.transformable.move(velocity.linear * dt.asSeconds());
-            transformable.transformable.rotate(velocity.angular * dt.asSeconds());
+            transformable.move(velocity.linear * dt.asSeconds());
+            transformable.rotate(velocity.angular * dt.asSeconds());
         }
     );
     mRegistry.view<PlayerActionQueue, sf::Sprite>().each([this, dt](PlayerActionQueue& queue, sf::Sprite& sprite) {
@@ -299,27 +299,28 @@ void GameScene::draw(sf::RenderWindow& window) {
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
-        // TODO: z-indexing for sprites
+        mRegistry.sort<Drawable>([](const Drawable& a, const Drawable& b) {
+            return a.render_index < b.render_index;
+        });
         mRegistry.view<const Drawable>().each([&](const entt::entity& ent, const Drawable& drawable) {
-            if (mRegistry.all_of<Transformable>(ent)) {
-                const Transformable& transform = mRegistry.get<Transformable>(ent);
+            if (mRegistry.all_of<Transformable>(ent)) {  // if the entity has a Transformable component, we can selectively draw it
+                const Transformable& transformable = mRegistry.get<Transformable>(ent);
 
                 auto view_rect_world = sf::FloatRect {
                     rt.getView().getCenter() - rt.getView().getSize() / 1.5f,  // top-left
                     rt.getView().getSize()*2.f  // size
                 };
-                if (view_rect_world.contains(transform.transformable.getPosition()))
-                    rt.draw(drawable.drawable);
+                if (view_rect_world.contains(transformable.getPosition()))
+                    rt.draw((const sf::Drawable&)drawable);
             } else {
-                // no transform component, just draw it
-                rt.draw(drawable.drawable);
+                rt.draw((const sf::Drawable&)drawable);
             }
         });
 
         {
             if (mCursorNearestEntity != entt::null) {
 
-                sf::Vector2f transformPos = mRegistry.get<Transformable>(mCursorNearestEntity).transformable.getPosition();
+                sf::Vector2f transformPos = mRegistry.get<Transformable>(mCursorNearestEntity).getPosition();
                 sf::Vector2f cursorWorldPos = mWorldRT.mapPixelToCoords(sf::Mouse::getPosition(window));
 
                 sf::CircleShape circle(10.f);

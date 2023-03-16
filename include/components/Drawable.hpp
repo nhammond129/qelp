@@ -2,9 +2,11 @@
 
 #include <SFML/Graphics.hpp>
 
-struct Drawable {
-    sf::Drawable& drawable;
-    size_t render_index = 0;  // for depth sorting
+class Drawable {
+public:
+    Drawable(sf::Drawable& sfdrawable): sfdrawable(sfdrawable) {}
+    operator sf::Drawable&() const { return sfdrawable; }
 
-    operator sf::Drawable&() { return drawable; }
+    sf::Drawable& sfdrawable;
+    size_t render_index = 0;  // for depth sorting
 };
