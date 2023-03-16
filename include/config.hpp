@@ -17,6 +17,7 @@ static std::string WINDOW_TITLE = "qelp";
 static uint32_t SCREEN_WIDTH = 1600;
 static uint32_t SCREEN_HEIGHT = 900;
 static uint32_t MAX_FPS = 144;
+static sf::Time FIXED_UPDATE_INTERVAL = sf::seconds(1.f / 60.f);
 
 namespace bindings {
     static std::unordered_map<input::Action::Type, input::Key> keys = {

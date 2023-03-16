@@ -241,8 +241,8 @@ void GameScene::update(const sf::Time& dt) {
     {   // fixed update (physics)
         sf::Time elapsed = dt;
         while (elapsed > sf::Time::Zero) {
-            fixed_update(std::min(mFixedUpdateInterval, elapsed));
-            elapsed -= mFixedUpdateInterval;
+            fixed_update(std::min(config::FIXED_UPDATE_INTERVAL, elapsed));
+            elapsed -= config::FIXED_UPDATE_INTERVAL;
         }
     }
 

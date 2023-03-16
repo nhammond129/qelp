@@ -7,7 +7,6 @@
 namespace scenes {
 
 class GameScene: public IScene {
-    const sf::Time mFixedUpdateInterval = sf::seconds(1.f / 60.f);
 public:
     GameScene(SceneManager& manager);
 
