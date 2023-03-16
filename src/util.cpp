@@ -5,6 +5,14 @@
 
 namespace util {
 
+template <typename T>
+bool intersects(const sf::Rect<T>& a, const sf::Rect<T>& b)  {
+    return (
+        (a.top < b.top + b.height && a.top + a.height > b.top) &&
+        (a.left < b.left + b.width && a.left + a.width > b.left)
+    );
+}
+
 sf::Texture& programmerArtTexture(float width, float height, const sf::Color color, const sf::Color background, const std::vector<sf::Vector2f> &points) {
     static std::forward_list<sf::Texture> static_textures;  // static so that the textures are not destroyed when the function returns
                                                             // This is dangerous, but it's okay as a temporary measure until I can figure out a better way to do this

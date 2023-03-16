@@ -35,6 +35,12 @@ namespace util {
     }
 
     /**
+     * @brief Check intersection of two sf::Rect<T> AABBs
+     **/
+    template <typename T>
+    bool intersects(const sf::Rect<T>& a, const sf::Rect<T>& b);
+
+    /**
      * @brief programmer art texture generation
      * @param width  The width of the texture
      * @param height The height of the texture
