@@ -177,13 +177,20 @@ void GameScene::handleEvent(const sf::Event& event) {
             }
             case input::Action::Type::MoveClick: {
                 sf::Vector2f pos = mWorldRT.mapPixelToCoords(action.move.pos);
-                mRegistry.view<PlayerActionQueue>().each([&pos](PlayerActionQueue& queue) {
+                mRegistry.view<PlayerActionQueue>().each([&](PlayerActionQueue& queue) {
+                    if (!action.move.queue) queue.actions.clear();
                     queue.actions.push_back( {
                         .type = PlayerActionQueue::Action::Type::Move,
                         .move = {pos},
                     });
                     if (queue.actions.size() > PlayerActionQueue::MAX_DEPTH)
                         queue.actions.pop_front();
+                });
+                break;
+            }
+            case input::Action::Type::ViewCenter: {
+                mRegistry.view<ParentedView, sf::Sprite>().each([this](ParentedView& view, sf::Sprite& sprite) {
+                    view.set_center(sprite.getPosition());
                 });
                 break;
             }

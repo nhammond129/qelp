@@ -3,6 +3,19 @@
 
 namespace input {
 
+bool isModifierPressed(const Modifier& mod, const unsigned int joyid) {
+    return std::visit([joyid](const auto& m) -> bool {
+        using T = std::decay_t<decltype(m)>;
+        if constexpr (std::is_same_v<T, Key>) {
+            return sf::Keyboard::isKeyPressed(m);
+        } else if constexpr (std::is_same_v<T, MouseButton>) {
+            return sf::Mouse::isButtonPressed(m);
+        } else if constexpr (std::is_same_v<T, JoyButton>) {
+            return sf::Joystick::isButtonPressed(joyid, m);
+        }
+    }, mod);
+}
+
 std::optional<Action> getAction(const sf::Event& event) {
     /**
      * This function is a bit of a mess, the crux of the issue lies
@@ -25,7 +38,12 @@ std::optional<Action> getAction(const sf::Event& event) {
                             action.zoom.amount = 0.f;
                             break;
                         case Action::Type::MoveClick:
-                            action.move = {.pos = {event.mouseWheelScroll.x, event.mouseWheelScroll.y}};
+                            action.move = {
+                                .pos = {event.mouseWheelScroll.x, event.mouseWheelScroll.y},
+                                .queue = isModifierPressed(config::bindings::ActionQueueModifier)
+                            };
+                            break;
+                        case Action::Type::ViewCenter:
                             break;
                     }
                     return action;
@@ -45,7 +63,12 @@ std::optional<Action> getAction(const sf::Event& event) {
                             action.zoom.amount = 0.f;
                             break;
                         case Action::Type::MoveClick:
-                            action.move = {.pos = {event.mouseButton.x, event.mouseButton.y}};
+                            action.move = {
+                                .pos = {event.mouseButton.x, event.mouseButton.y},
+                                .queue = isModifierPressed(config::bindings::ActionQueueModifier)
+                            };
+                            break;
+                        case Action::Type::ViewCenter:
                             break;
                     }
                     return action;
@@ -66,7 +89,12 @@ std::optional<Action> getAction(const sf::Event& event) {
                             action.zoom.amount = 0.f;
                             break;
                         case Action::Type::MoveClick:
-                            action.move = {.pos = {sf::Mouse::getPosition().x, sf::Mouse::getPosition().y}};
+                            action.move = {
+                                .pos = {sf::Mouse::getPosition().x, sf::Mouse::getPosition().y},
+                                .queue = isModifierPressed(config::bindings::ActionQueueModifier)
+                            };
+                            break;
+                        case Action::Type::ViewCenter:
                             break;
                     }
                     return action;
@@ -87,7 +115,12 @@ std::optional<Action> getAction(const sf::Event& event) {
                             action.zoom.amount = 0.f;
                             break;
                         case Action::Type::MoveClick:
-                            action.move = {.pos = {sf::Mouse::getPosition().x, sf::Mouse::getPosition().y}};
+                            action.move = {
+                                .pos = {sf::Mouse::getPosition().x, sf::Mouse::getPosition().y},
+                                .queue = isModifierPressed(config::bindings::ActionQueueModifier)
+                            };
+                            break;
+                        case Action::Type::ViewCenter:
                             break;
                     }
                     return action;
@@ -109,9 +142,14 @@ std::optional<Action> getAction(const sf::Event& event) {
                             break;
                         case Action::Type::MoveClick:
                             // defaulting to mouse position
-                            action.move = {.pos = {sf::Mouse::getPosition().x, sf::Mouse::getPosition().y}};
+                            action.move = {
+                                .pos = {sf::Mouse::getPosition().x, sf::Mouse::getPosition().y},
+                                .queue = isModifierPressed(config::bindings::ActionQueueModifier)
+                            };
                             break;
-                        }
+                        case Action::Type::ViewCenter:
+                            break;
+                    }
                     return action;
                 }
             }

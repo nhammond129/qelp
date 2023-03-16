@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <SFML/Window.hpp>
+#include <variant>
 
 namespace input {
 
@@ -10,12 +11,16 @@ using MouseButton = sf::Mouse::Button;
 using MouseWheel = sf::Mouse::Wheel;
 using JoyButton = uint32_t;
 using JoyAxis = sf::Joystick::Axis;
+using Modifier = std::variant<Key, MouseButton, JoyButton>;
+
+bool isModifierPressed(const Modifier& mod, const unsigned int joyid = 0);
 
 struct Action {
     enum class Type {
         ZoomIn,
         ZoomOut,
         ZoomReset,
+        ViewCenter,
         MoveClick,
     };
 
@@ -25,6 +30,7 @@ struct Action {
 
     struct MoveClick {
         sf::Vector2i pos;
+        bool queue = false;
     };
 
     Type type;
