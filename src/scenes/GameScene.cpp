@@ -101,6 +101,8 @@ GameScene::GameScene(SceneManager& manager) : IScene(manager) {
             sf::Sprite& turretSprite = mRegistry.emplace<sf::Sprite>(turret_entity, data::Textures["sprites/turret1.png"]);
             auto tx_size = turretSprite.getTexture()->getSize();
             turretSprite.setOrigin({18, 20});
+            auto& turretDrawable = mRegistry.get<Drawable>(turret_entity);
+            turretDrawable.render_index = 1;
         }
         return turret_entity;
     };
@@ -305,9 +307,13 @@ void GameScene::draw(sf::RenderWindow& window) {
     sf::RenderTexture& rt = mWorldRT;
     rt.clear();
     {
-        mRegistry.sort<Drawable>([](const Drawable& a, const Drawable& b) {
-            return a.render_index < b.render_index;
-        });
+        /* This does something funky -- somehow the corresponding entities are mismatched?
+         * When I have proper culling, it'll be easier to batch and sort the draw calls...
+         *
+         *  mRegistry.sort<Drawable>([](const Drawable& a, const Drawable& b) {
+         *      return (a.render_index < b.render_index);
+         *  });
+         */
         mRegistry.view<const Drawable>().each([&](const entt::entity& ent, const Drawable& drawable) {
             if (mRegistry.all_of<Transformable>(ent)) {  // if the entity has a Transformable component, we can selectively draw it
                 const Transformable& transformable = mRegistry.get<Transformable>(ent);

@@ -8,5 +8,5 @@ public:
     operator sf::Drawable&() const { return sfdrawable; }
 
     sf::Drawable& sfdrawable;
-    size_t render_index = 0;  // for depth sorting
+    int16_t render_index = 0;  // for depth sorting
 };
