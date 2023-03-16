@@ -34,9 +34,4 @@ namespace bindings {
     static std::unordered_map<input::Action::Type, input::JoyButton>   joybuttons;
 };  // namespace bindings
 
-/*
-void try_load() noexcept(false); // TODO //
-void save(); // TODO //
-*/
-
 };  // namespace config
