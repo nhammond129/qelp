@@ -4,12 +4,18 @@
 #include <exception>
 #include <imgui.h>
 #include <SFML/Graphics.hpp>
+#include <source_location>
 #include <vector>
 
 /**
  * general utility and miscellaneous functions
  **/
 namespace util {
+
+    /**
+     * @brief logging helper
+     */
+    void log(const std::string& message, const std::source_location& location = std::source_location::current());
 
     /**
      * @brief Helper for adding interface component dependencies

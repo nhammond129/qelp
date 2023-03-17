@@ -1,9 +1,17 @@
 #include <exception>
 #include <forward_list>
+#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <util.hpp>
 
 namespace util {
+
+void log(const std::string& msg, const std::source_location& loc) {
+    std::cout
+        << "[" << loc.file_name() << ":" << loc.line() << "] "
+        << msg
+        << std::endl;
+}
 
 template <typename T>
 bool intersects(const sf::Rect<T>& a, const sf::Rect<T>& b)  {
