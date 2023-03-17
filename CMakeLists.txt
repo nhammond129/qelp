@@ -31,8 +31,23 @@ target_sources(main PRIVATE
 )
 target_link_libraries(main PRIVATE
     sfml-graphics
-    sfml-window
+    sfml-network
     sfml-system
+    sfml-window
+    IMGUI
+    ImGui-SFML::ImGui-SFML
+)
+
+add_executable(server)
+target_sources(server PRIVATE
+    "${SOURCE_DIR}/server.cpp"
+    "${SOURCE_DIR}/util.cpp"
+)
+target_link_libraries(server PRIVATE
+    sfml-graphics
+    sfml-network
+    sfml-system
+    sfml-window
     IMGUI
     ImGui-SFML::ImGui-SFML
 )
