@@ -1,8 +1,9 @@
 #pragma once
 
+#include <chrono>
+#include <cstddef>
 #include <entt/entt.hpp>
 #include <exception>
-#include <imgui.h>
 #include <SFML/Graphics.hpp>
 #include <source_location>
 #include <vector>
@@ -11,6 +12,10 @@
  * general utility and miscellaneous functions
  **/
 namespace util {
+
+    using Clock = std::chrono::high_resolution_clock;
+    using Time = std::chrono::time_point<Clock>;
+    using Duration = std::chrono::duration<float>;
 
     /**
      * @brief logging helper

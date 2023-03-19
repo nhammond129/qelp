@@ -38,18 +38,16 @@ target_link_libraries(main PRIVATE
     ImGui-SFML::ImGui-SFML
 )
 
-add_executable(server)
-target_sources(server PRIVATE
-    "${SOURCE_DIR}/server.cpp"
+add_executable(networktest)
+target_sources(networktest PRIVATE
+    "${SOURCE_DIR}/networktest.cpp"
     "${SOURCE_DIR}/util.cpp"
 )
-target_link_libraries(server PRIVATE
+target_link_libraries(networktest PRIVATE
     sfml-graphics
     sfml-network
     sfml-system
     sfml-window
-    IMGUI
-    ImGui-SFML::ImGui-SFML
 )
 
 file(GLOB_RECURSE ASSETS

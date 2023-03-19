@@ -1,16 +1,21 @@
 #include <exception>
 #include <forward_list>
 #include <iostream>
+#include <mutex>
 #include <SFML/Graphics.hpp>
 #include <util.hpp>
 
 namespace util {
 
 void log(const std::string& msg, const std::source_location& loc) {
-    std::cout
-        << "[" << loc.file_name() << ":" << loc.line() << "] "
-        << msg
-        << std::endl;
+    static std::mutex sIOlock;
+    {
+        std::lock_guard<std::mutex> lock(sIOlock);
+        std::cout
+            << "[" << loc.file_name() << ":" << loc.line() << "] "
+            << msg
+            << std::endl;
+    }
 }
 
 template <typename T>
