@@ -7,15 +7,29 @@
 
 namespace util {
 
+/**
+ * FUTURE: (probably by april '23) use `std::format`
+ *
+ * If std::format was available for gcc < 13, I would use it here to provide an easier variadic interface.
+ * Alas, since gcc 13 is not officially released yet, I will have to be satisfied with this for now.
+ **/
 void log(const std::string& msg, const std::source_location& loc) {
     static std::mutex sIOlock;
     {
         std::lock_guard<std::mutex> lock(sIOlock);
         std::cout
+        #ifndef NDEBUG
             << "[" << loc.file_name() << ":" << loc.line() << "] "
+        #endif
             << msg
             << std::endl;
     }
+}
+
+void debuglog(const std::string& msg, const std::source_location& loc) {
+    #ifndef NDEBUG
+        log(msg, loc);
+    #endif
 }
 
 template <typename T>

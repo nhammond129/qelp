@@ -19,8 +19,17 @@ namespace util {
 
     /**
      * @brief logging helper
-     */
+     * @note This is will log during release builds
+     * @see util::debuglog
+     **/
     void log(const std::string& message, const std::source_location& location = std::source_location::current());
+
+    /**
+     * @brief logging helper that only logs during debug builds
+     * @note This is a no-op in release builds
+     * @see util::log
+     **/
+    void debuglog(const std::string& message, const std::source_location& location = std::source_location::current());
 
     /**
      * @brief Helper for adding interface component dependencies

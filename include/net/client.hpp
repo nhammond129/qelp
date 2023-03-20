@@ -20,7 +20,7 @@ public:
         requestConnect();
         handleChallenge();
         awaitConnectionAck();
-        util::log("Connected! I am client " + std::to_string(mID));
+        util::debuglog("Connected! I am client " + std::to_string(mID));
 
         // send pings every 1 second lol
 
@@ -65,15 +65,15 @@ private:
             util::log("Failed to send connection request");
             std::exit(1);
         }
-        util::log("Sent connection request to " + mServerAddress.toString() + ":" + std::to_string(mServerPort));
+        util::debuglog("Sent connection request to " + mServerAddress.toString() + ":" + std::to_string(mServerPort));
     }
     void handleChallenge() {
-        util::log("Awaiting challenge...");
+        util::debuglog("Awaiting challenge...");
         std::optional<net::Challenge> challenge_opt;
         while(true) {
             challenge_opt = expect<net::Challenge>();
             if (!challenge_opt) continue;
-            util::log("Received challenge (salt: " + std::to_string(challenge_opt.value().challenge_salt) + ")");
+            util::debuglog("Received challenge (salt: " + std::to_string(challenge_opt.value().challenge_salt) + ")");
 
             mID = challenge_opt.value().client_id;
             uint32_t server_salt = challenge_opt.value().challenge_salt;
@@ -104,7 +104,7 @@ private:
             ack_opt = expect<net::ConnectionAccepted>();
             if (!ack_opt) continue;
             assert(ack_opt.value().client_id == mID);
-            util::log("Connection accepted");
+            util::debuglog("Connection accepted");
             break;
         }
     }
@@ -126,7 +126,7 @@ private:
             pong_opt = expect<net::Pong>();
             if (!pong_opt) continue;
             assert(pong_opt.value().client_id == mID);
-            util::log("pongping! Client #" + std::to_string(mID));
+            util::debuglog("pongping! Client #" + std::to_string(mID) + " [client]");
             break;
         }
     }

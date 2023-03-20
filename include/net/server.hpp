@@ -62,17 +62,20 @@ public:
                     sf::Packet challengePacket;
                     challengePacket << Header { .type = net::PacketType::Challenge } << challenge;
                     
-                    if (!send(challengePacket, remoteAddr.value(), remotePort)) break;
-                    util::log("Sent challenge to " + remoteAddr.value().toString() + ":" + std::to_string(remotePort) + " (salt: " + std::to_string(challenge.challenge_salt) + ")");
+                    if (!send(challengePacket, remoteAddr.value(), remotePort)) {
+                        util::log("Failed to send challenge packet");
+                        break;
+                    }
+                    util::debuglog("Sent challenge to " + remoteAddr.value().toString() + ":" + std::to_string(remotePort) + " (salt: " + std::to_string(challenge.challenge_salt) + ")");
 
                     break;
                 }
                 case PacketType::ChallengeResponse: {
-                    util::log("Challenge response from " + remoteAddr.value().toString() + ":" + std::to_string(remotePort));
+                    util::debuglog("Challenge response from " + remoteAddr.value().toString() + ":" + std::to_string(remotePort));
                     ChallengeResponse response;
                     
                     if (!(packet >> response)) break;
-                    util::log("Client ID: " + std::to_string(response.client_id));
+                    util::debuglog("Client ID: " + std::to_string(response.client_id));
                     if (!hasClient(response.client_id)) break;
                     Client& client = lookupClient(response.client_id);
                     if (client.address != remoteAddr.value() || client.port != remotePort) break;  // wrong client!
@@ -112,7 +115,7 @@ public:
                         .ping_id = ping.ping_id
                     };
                     send(pongPacket, client);
-                    util::log("pingpong! Client #" + std::to_string(ping.client_id));
+                    util::debuglog("pingpong! Client #" + std::to_string(ping.client_id) + " [server]");
                     break;
                 }
             }
