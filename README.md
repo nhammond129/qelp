@@ -23,7 +23,6 @@ cmake --build build     # build the project
 cmake --build build --target docs
 ```
 
-
 ## See also
  * [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/)
  * [box2d documentation](https://box2d.org/documentation/)
