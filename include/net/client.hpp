@@ -35,7 +35,7 @@ private:
     std::optional<T> expect(uint32_t timeout_seconds = 30) {
         T t;
         sf::Packet packet;
-        std::optional<sf::IpAddress> remoteAddr;
+        std::optional<sf::IpAddress> remoteAddr = std::nullopt;
         unsigned short remotePort;
 
         while(true) {  // TODO: timeout

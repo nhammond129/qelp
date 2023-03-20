@@ -39,7 +39,7 @@ public:
 
         sf::Packet packet;
         unsigned short remotePort;
-        std::optional<sf::IpAddress> remoteAddr(0);
+        std::optional<sf::IpAddress> remoteAddr = std::nullopt;
         while (true) {
             if (!(socket.receive(packet, remoteAddr, remotePort) == sf::Socket::Status::Done)) continue;
             net::Header header;
