@@ -42,6 +42,7 @@ private:
             if (!(mSocket.receive(packet, remoteAddr, remotePort) == sf::Socket::Status::Done)) continue;
             if (remoteAddr.value() != mServerAddress || remotePort != mServerPort) {
                 util::log("Received packet from " + remoteAddr.value().toString() + ":" + std::to_string(remotePort) + " but expected " + mServerAddress.toString() + ":" + std::to_string(mServerPort));
+                continue;
             }
 
             net::Header header;
