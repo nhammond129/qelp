@@ -25,16 +25,17 @@ cmake --build build --target docs
 
 
 ## See also
+ * [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/)
+ * [box2d documentation](https://box2d.org/documentation/)
  * [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
  * [CMake projects in Visual Studio](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-170)
- * [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/)
- * [SFML Documentation](https://www.sfml-dev.org/documentation/2.5.1/modules.php)
  * [Doxygen](https://www.doxygen.nl/manual/index.html)
  * [entt wiki](https://github.com/skypjack/entt/wiki/)
-   * [entt wiki: Views](https://github.com/skypjack/entt/wiki/Crash-Course:-entity-component-system#views)
    * [entt wiki: Resource Management](https://github.com/skypjack/entt/wiki/Crash-Course:-resource-management)
+   * [entt wiki: Views](https://github.com/skypjack/entt/wiki/Crash-Course:-entity-component-system#views)
  * [imgui manual](https://pthom.github.io/imgui_manual_online/manual/imgui_manual.html)
  * [luacpp](https://github.com/jordanvrtanoski/luacpp)
+ * [SFML Documentation](https://www.sfml-dev.org/documentation/2.5.1/modules.php)
 
 ## Dependencies
  * Multimedia Library:  [SFML](https://github.com/SFML/SFML)
