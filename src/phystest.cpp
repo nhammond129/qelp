@@ -25,14 +25,14 @@ int main() {
 	b2World world(b2Vec2(0.f, 0.f));
 
 
-	b2Body* body = createCircle(b2Vec2(0.f, 0.f), b2Vec2(1.f, 0.f), world, 1.f);
+	b2Body* body = createCircle(b2Vec2(0.f, 0.f), b2Vec2(10.f, 0.f), world, 1.f);
 	b2Body* body2 = createCircle(b2Vec2(10.f, 0.f), b2Vec2(0.f, 0.f), world, 1.f);
 
-	float timeStep = 1.f / 60.f;
+	float timeStep = 4.f / 60.f;
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
 
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 20; ++i) {
 		world.Step(timeStep, velocityIterations, positionIterations);
 		b2Vec2 pos = body->GetPosition();
 		b2Vec2 pos2 = body2->GetPosition();

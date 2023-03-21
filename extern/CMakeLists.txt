@@ -1,5 +1,5 @@
 FetchContent_Declare(
-    Box2D
+    box2d
     SOURCE_DIR     "${CMAKE_CURRENT_SOURCE_DIR}/Box2D"
     GIT_REPOSITORY "https://github.com/erincatto/box2d.git"
     GIT_TAG        "9ebbbcd960ad424e03e5de6e66a40764c16f51bc" # v2.4.1
@@ -34,7 +34,7 @@ FetchContent_Declare(
     GIT_PROGRESS    TRUE
 )
 
-FetchContent_MakeAvailable(SFML imgui Box2D)
+FetchContent_MakeAvailable(SFML imgui box2d)
 
 set(IMGUI_DIR ${imgui_SOURCE_DIR})
 add_library(IMGUI STATIC)

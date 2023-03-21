@@ -41,10 +41,9 @@ target_link_libraries(main PRIVATE
 add_executable(phystest)
 target_sources(phystest PRIVATE
 	"${SOURCE_DIR}/phystest.cpp"
-	"${SOURCE_DIR}/util.cpp"
 )
 target_link_libraries(phystest PRIVATE
-	Box2D
+	box2d
 )
 
 add_executable(networktest)
