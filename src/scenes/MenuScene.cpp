@@ -10,7 +10,10 @@ MenuScene::MenuScene(SceneManager& manager) : IScene(manager) {
         Option(sf::Text("Play", mFont, 30), [this](){
             mManager.pushScene(new GameScene(mManager));
         }),
-        Option(sf::Text("Settings", mFont, 30), [](){
+        Option(sf::Text("Solo Multiplayer lol", mFont, 30), [this](){
+            mManager.pushScene(new GameClient(mManager));
+        }),
+        Option(sf::Text("Settings", mFont, 30), [this](){
             // TODO: Settings menu
             std::cout << "<Settings>" << std::endl;
         }),

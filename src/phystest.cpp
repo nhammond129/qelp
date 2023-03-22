@@ -10,12 +10,7 @@ b2Body* createCircle(b2Vec2 pos, b2Vec2 vel, b2World& world, float radius) {
 
 	b2CircleShape circle;
 	circle.m_radius = radius;
-
-	b2FixtureDef fixtureDef;
-	fixtureDef.shape = &circle;
-	fixtureDef.density = 1.0f;
-	fixtureDef.friction = 0.3f;
-	body->CreateFixture(&fixtureDef);
+	body->CreateFixture(&circle, 1.0f/* density */);
 
 	return body;
 }
@@ -23,7 +18,6 @@ b2Body* createCircle(b2Vec2 pos, b2Vec2 vel, b2World& world, float radius) {
 int main() {
     // box2d example code
 	b2World world(b2Vec2(0.f, 0.f));
-
 
 	b2Body* body = createCircle(b2Vec2(0.f, 0.f), b2Vec2(10.f, 0.f), world, 1.f);
 	b2Body* body2 = createCircle(b2Vec2(10.f, 0.f), b2Vec2(0.f, 0.f), world, 1.f);
