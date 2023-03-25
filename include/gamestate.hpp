@@ -6,7 +6,7 @@
 
 namespace game {
 
-struct PlayerData {
+struct PlayerDataComponent {
     uint32_t shipdata;
 };
 
