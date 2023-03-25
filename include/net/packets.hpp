@@ -82,41 +82,41 @@ struct Pong {
     uint32_t ping_id;               // client-generated ID that server echoes back to acknowledge ping
 };
 
-sf::Packet& operator<<(sf::Packet& packet, const ConnectionRequest& request) {
+inline sf::Packet& operator<<(sf::Packet& packet, const ConnectionRequest& request) {
     return packet;
 }
-sf::Packet& operator<<(sf::Packet& packet, const Challenge& challenge) {
+inline sf::Packet& operator<<(sf::Packet& packet, const Challenge& challenge) {
     return packet << challenge.client_id << challenge.challenge_salt;
 }
-sf::Packet& operator<<(sf::Packet& packet, const ChallengeResponse& response) {
+inline sf::Packet& operator<<(sf::Packet& packet, const ChallengeResponse& response) {
     return packet << response.client_id << response.challenge_salt << response.challenge_response;
 }
-sf::Packet& operator<<(sf::Packet& packet, const ConnectionAccepted& accepted) {
+inline sf::Packet& operator<<(sf::Packet& packet, const ConnectionAccepted& accepted) {
     return packet << accepted.client_id;
 }
-sf::Packet& operator<<(sf::Packet& packet, const Ping& ping) {
+inline sf::Packet& operator<<(sf::Packet& packet, const Ping& ping) {
     return packet << ping.client_id << ping.ping_id;
 }
-sf::Packet& operator<<(sf::Packet& packet, const Pong& pong) {
+inline sf::Packet& operator<<(sf::Packet& packet, const Pong& pong) {
     return packet << pong.client_id << pong.ping_id;
 }
 
-sf::Packet& operator>>(sf::Packet& packet, ConnectionRequest& request) {
+inline sf::Packet& operator>>(sf::Packet& packet, ConnectionRequest& request) {
     return packet;
 }
-sf::Packet& operator>>(sf::Packet& packet, Challenge& challenge) {
+inline sf::Packet& operator>>(sf::Packet& packet, Challenge& challenge) {
     return packet >> challenge.client_id >> challenge.challenge_salt;
 }
-sf::Packet& operator>>(sf::Packet& packet, ChallengeResponse& response) {
+inline sf::Packet& operator>>(sf::Packet& packet, ChallengeResponse& response) {
     return packet >> response.client_id >> response.challenge_salt >> response.challenge_response;
 }
-sf::Packet& operator>>(sf::Packet& packet, ConnectionAccepted& accepted) {
+inline sf::Packet& operator>>(sf::Packet& packet, ConnectionAccepted& accepted) {
     return packet >> accepted.client_id;
 }
-sf::Packet& operator>>(sf::Packet& packet, Ping& ping) {
+inline sf::Packet& operator>>(sf::Packet& packet, Ping& ping) {
     return packet >> ping.client_id >> ping.ping_id;
 }
-sf::Packet& operator>>(sf::Packet& packet, Pong& pong) {
+inline sf::Packet& operator>>(sf::Packet& packet, Pong& pong) {
     return packet >> pong.client_id >> pong.ping_id;
 }
 
