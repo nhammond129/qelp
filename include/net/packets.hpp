@@ -77,6 +77,23 @@ struct Pong {
     uint32_t ping_id;               // client-generated ID that server echoes back to acknowledge ping
 };
 
+
+inline sf::Packet& operator<<(sf::Packet& packet, const PacketType type) {
+    return packet << static_cast<uint32_t>(type);
+}
+inline sf::Packet& operator>>(sf::Packet& packet, PacketType& type) {
+    uint32_t typeInt;
+    packet >> typeInt;
+    type = static_cast<PacketType>(typeInt);
+    return packet;
+}
+inline sf::Packet& operator<<(sf::Packet& packet, const Header& header) {
+    return packet << header.proto_id << header.type;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, Header& header) {
+    return packet >> header.proto_id >> header.type;
+}
+
 inline sf::Packet& operator<<(sf::Packet& packet, const ConnectionRequest& request) {
     return packet;
 }
