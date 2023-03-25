@@ -1,12 +1,9 @@
 #include <net/server.hpp>
-#include <net/client.hpp>
 #include <util.hpp>
 
-
-
 int main() {
-    // dedicated server
+    util::log("Starting server...");
     net::Server server(0xf00d);
-    server.run();
+    server.serve();
     return 0;
 }

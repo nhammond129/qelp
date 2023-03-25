@@ -26,21 +26,6 @@ struct Header {
     PROTOCOL_ID proto_id = protocolID;
     PacketType type;
 };
-sf::Packet& operator<<(sf::Packet& packet, const PacketType type) {
-    return packet << static_cast<uint32_t>(type);
-}
-sf::Packet& operator>>(sf::Packet& packet, PacketType& type) {
-    uint32_t typeInt;
-    packet >> typeInt;
-    type = static_cast<PacketType>(typeInt);
-    return packet;
-}
-sf::Packet& operator<<(sf::Packet& packet, const Header& header) {
-    return packet << header.proto_id << header.type;
-}
-sf::Packet& operator>>(sf::Packet& packet, Header& header) {
-    return packet >> header.proto_id >> header.type;
-}
 
 /* Client to Server */
 struct ConnectionRequest {
