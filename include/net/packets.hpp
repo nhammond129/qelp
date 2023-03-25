@@ -5,11 +5,6 @@
 
 /**
  * Network-related data and functions.
- * 
- * Packet structure:
- * - uint32_t protocolId
- * - Type type
- * - struct data
  **/
 namespace net {
 
