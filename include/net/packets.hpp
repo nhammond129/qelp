@@ -53,13 +53,18 @@ struct ConnectionAccepted {
 struct Ping {
     static const PacketType packetType = PacketType::Ping;
     uint32_t client_id;             // server-side ID that client can use to identify itself
-    uint32_t ping_id;               // client-generated ID that server echoes back to acknowledge ping
+    uint64_t timestamp_nanosec;     // FUTURE(sometime before 2554 CE): upgrade to uint128_t
+    explicit Ping(uint32_t client_id);
 };
 /* Server to Client */
 struct Pong {
     static const PacketType packetType = PacketType::Pong;
     uint32_t client_id;             // server-side ID that client can use to identify itself
-    uint32_t ping_id;               // client-generated ID that server echoes back to acknowledge ping
+    uint64_t timestamp_nanosec;
+    Pong() = delete;
+    explicit Pong(const Ping& ping): client_id(ping.client_id), timestamp_nanosec(ping.timestamp_nanosec) {}
+    uint64_t estimate_latency_us() const;
+    float estimate_latency_ms() const;
 };
 
 
@@ -92,10 +97,10 @@ inline sf::Packet& operator<<(sf::Packet& packet, const ConnectionAccepted& acce
     return packet << accepted.client_id;
 }
 inline sf::Packet& operator<<(sf::Packet& packet, const Ping& ping) {
-    return packet << ping.client_id << ping.ping_id;
+    return packet << ping.client_id << ping.timestamp_nanosec;
 }
 inline sf::Packet& operator<<(sf::Packet& packet, const Pong& pong) {
-    return packet << pong.client_id << pong.ping_id;
+    return packet << pong.client_id << pong.timestamp_nanosec;
 }
 
 inline sf::Packet& operator>>(sf::Packet& packet, ConnectionRequest& request) {
@@ -111,10 +116,10 @@ inline sf::Packet& operator>>(sf::Packet& packet, ConnectionAccepted& accepted) 
     return packet >> accepted.client_id;
 }
 inline sf::Packet& operator>>(sf::Packet& packet, Ping& ping) {
-    return packet >> ping.client_id >> ping.ping_id;
+    return packet >> ping.client_id >> ping.timestamp_nanosec;
 }
 inline sf::Packet& operator>>(sf::Packet& packet, Pong& pong) {
-    return packet >> pong.client_id >> pong.ping_id;
+    return packet >> pong.client_id >> pong.timestamp_nanosec;
 }
 
 };  // namespace net

@@ -13,7 +13,7 @@ void Server::serve() {
         util::log("Failed to bind socket");
         std::exit(1);
     }
-    mSocket.setBlocking(false);
+    mSocket.setBlocking(false);  // necessary?
 
     sf::Packet packet;
     unsigned short remotePort;
@@ -81,17 +81,14 @@ void Server::serve() {
                 break;
             }
             case PacketType::Ping: {
-                Ping ping;
+                Ping ping(NULL);
                 if (!(packet >> ping) || !hasClient(ping.client_id)) break;
                 Client& client = lookupClient(ping.client_id);
                 if (client.address != remoteAddr.value() || client.port != remotePort) break;  // wrong client!
                 client.lastPacketTime = util::Clock::now();
 
                 sf::Packet pongPacket;
-                pongPacket << Header { .type = PacketType::Pong } << Pong {
-                    .client_id = ping.client_id,
-                    .ping_id = ping.ping_id
-                };
+                pongPacket << Header { .type = PacketType::Pong } << Pong(ping);
                 send(pongPacket, client);
                 util::debuglog("pingpong! Client #" + std::to_string(ping.client_id) + " [server]");
                 break;

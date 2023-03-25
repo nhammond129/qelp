@@ -45,9 +45,9 @@ private:
                 continue;
             }
 
-            net::Header header;
+            Header header;
             if (!(packet >> header)) continue;
-            if (header.proto_id != net::protocolID) continue;  // wrong protocol. TODO: inform server
+            if (header.proto_id != protocolID) continue;  // wrong protocol. TODO: inform server
             if (header.type != T::packetType) {
                 util::log("Received packet of type " + std::to_string((int)header.type) + " but expected " + std::to_string((int)T::packetType));
                 continue;  // not what we want
@@ -59,7 +59,7 @@ private:
     }
     void requestConnect() {
         sf::Packet packet;
-        packet << net::protocolID << net::PacketType::ConnectionRequest;
+        packet << protocolID << PacketType::ConnectionRequest;
         auto status = mSocket.send(packet, mServerAddress, mServerPort);
         if (status != sf::Socket::Status::Done) {
             util::log("Failed to send connection request");
@@ -69,9 +69,9 @@ private:
     }
     void handleChallenge() {
         util::debuglog("Awaiting challenge...");
-        std::optional<net::Challenge> challenge_opt;
+        std::optional<Challenge> challenge_opt;
         while(true) {
-            challenge_opt = expect<net::Challenge>();
+            challenge_opt = expect<Challenge>();
             if (!challenge_opt) continue;
             util::debuglog("Received challenge (salt: " + std::to_string(challenge_opt.value().challenge_salt) + ")");
 
@@ -82,10 +82,10 @@ private:
 
             sf::Packet packet;
             packet
-                << net::Header {
-                    .type = net::PacketType::ChallengeResponse
+                << Header {
+                    .type = PacketType::ChallengeResponse
                 }
-                << net::ChallengeResponse {
+                << ChallengeResponse {
                     .client_id = mID,
                     .challenge_salt = client_salt,
                     .challenge_response = challenge_response
@@ -99,9 +99,9 @@ private:
         }
     }
     void awaitConnectionAck() {
-        std::optional<net::ConnectionAccepted> ack_opt;
+        std::optional<ConnectionAccepted> ack_opt;
         while(true) {
-            ack_opt = expect<net::ConnectionAccepted>();
+            ack_opt = expect<ConnectionAccepted>();
             if (!ack_opt) continue;
             assert(ack_opt.value().client_id == mID);
             util::debuglog("Connection accepted");
@@ -109,11 +109,10 @@ private:
         }
     }
     void sendPing() {
-        uint32_t value = (uint32_t)std::rand();
         sf::Packet packet;
         packet
-            << net::Header { .type = net::PacketType::Ping }
-            << net::Ping { .client_id = mID, .ping_id = value };
+            << Header { .type = PacketType::Ping }
+            << Ping(mID);
         auto status = mSocket.send(packet, mServerAddress, mServerPort);
         if (status != sf::Socket::Status::Done) {
             util::log("Failed to send ping");
@@ -121,9 +120,9 @@ private:
         }
     }
     void receivePong() {
-        std::optional<net::Pong> pong_opt;
+        std::optional<Pong> pong_opt;
         while(true) {
-            pong_opt = expect<net::Pong>();
+            pong_opt = expect<Pong>();
             if (!pong_opt) continue;
             assert(pong_opt.value().client_id == mID);
             util::debuglog("pongping! Client #" + std::to_string(mID) + " [client]");
@@ -132,7 +131,7 @@ private:
     }
     
 
-    net::ClientID mID;
+    ClientID mID;
     sf::UdpSocket mSocket;
     const sf::IpAddress mServerAddress;
     const uint16_t mServerPort;
