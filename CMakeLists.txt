@@ -49,16 +49,18 @@ target_link_libraries(phystest PRIVATE
 	box2d
 )
 
-add_executable(networktest)
-target_sources(networktest PRIVATE
-    "${SOURCE_DIR}/networktest.cpp"
+add_executable(server)
+target_sources(server PRIVATE
+    "${SOURCE_DIR}/dedicated_server.cpp"
+    "${SOURCE_DIR}/gamestate.cpp"
     "${SOURCE_DIR}/util.cpp"
 )
-target_link_libraries(networktest PRIVATE
+target_link_libraries(server PRIVATE
     sfml-graphics
     sfml-network
     sfml-system
     sfml-window
+    box2d
 )
 
 file(GLOB_RECURSE ASSETS

@@ -6,6 +6,10 @@
 
 namespace game {
 
+struct PlayerData {
+    uint32_t shipdata;
+};
+
 struct b2BodyComponent {
     struct RenderingInfo {
         sf::ConvexShape shape;
