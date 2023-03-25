@@ -18,7 +18,6 @@ std::chrono::duration<Rep, Period> duration_from_ns(
 namespace net {
 
 Ping::Ping(uint32_t client_id): client_id(client_id) {
-    // goodness gracious that's a lot of characters for a simple assignment
     timestamp_nanosec = std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::high_resolution_clock::now().time_since_epoch()
     ).count();
