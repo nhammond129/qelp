@@ -21,7 +21,7 @@ enum class PacketType {
     ChallengeResponse,
     ConnectionAccepted,
     Ping, Pong,
-    EntityUpdate
+    StateUpdate
 };
 
 struct Header {
@@ -69,23 +69,25 @@ struct Pong {
     float estimate_latency_ms() const;
 };
 
-struct EntityUpdate {
-    static const PacketType packetType = PacketType::EntityUpdate;
+struct StateUpdate {
+    static const PacketType packetType = PacketType::StateUpdate;
     uint32_t client_id;
-    entt::entity entity_id;
-    enum class UpdateType {
-        Transform
+    struct Update {
+        entt::entity entity_id;
+        enum class Type {
+            Transform
+        };
+        struct Transform {
+            float x;
+            float y;
+            float ang_radians;
+        };
+        Type update_type;
+        union {
+            Transform transform;
+        };
     };
-    struct TransformUpdate {
-        float x;
-        float y;
-        float ang_radians;
-    };
-    UpdateType update_type;
-    union {
-        TransformUpdate transform;
-    };
-    explicit EntityUpdate(uint32_t client, entt::entity ent, entt::registry& reg);
+    std::vector<Update> updates;
 };
 
 inline sf::Packet& operator<<(sf::Packet& packet, const entt::entity& ent_id) {
@@ -98,24 +100,39 @@ inline sf::Packet& operator>>(sf::Packet& packet, entt::entity& ent_id) {
     return packet;
 }
 
-inline sf::Packet& operator<<(sf::Packet& packet, const EntityUpdate& update) {
-    packet << update.client_id << update.entity_id << static_cast<uint32_t>(update.update_type);
+inline sf::Packet& operator<<(sf::Packet& packet, const StateUpdate::Update& update) {
+    packet << update.entity_id << static_cast<uint32_t>(update.update_type);
     switch (update.update_type) {
-    case EntityUpdate::UpdateType::Transform:
-        packet << update.transform.x << update.transform.y << update.transform.ang_radians;
-        break;
+        case StateUpdate::Update::Type::Transform:
+            packet << update.transform.x << update.transform.y << update.transform.ang_radians;
+            break;
     }
     return packet;
 }
-inline sf::Packet& operator>>(sf::Packet& packet, EntityUpdate& update) {
-    uint32_t updateTypeInt;
-    packet >> update.client_id >> update.entity_id >> updateTypeInt;
-    update.update_type = static_cast<EntityUpdate::UpdateType>(updateTypeInt);
+inline sf::Packet& operator>>(sf::Packet& packet, StateUpdate::Update& update) {
+    uint32_t update_type_int;
+    packet >> update.entity_id >> update_type_int;
+    update.update_type = static_cast<StateUpdate::Update::Type>(update_type_int);
     switch (update.update_type) {
-    case EntityUpdate::UpdateType::Transform:
-        packet >> update.transform.x >> update.transform.y >> update.transform.ang_radians;
-        break;
+        case StateUpdate::Update::Type::Transform:
+            packet >> update.transform.x >> update.transform.y >> update.transform.ang_radians;
+            break;
     }
+    return packet;
+}
+
+inline sf::Packet& operator<<(sf::Packet& packet, const StateUpdate& update) {
+    packet << update.client_id << static_cast<uint32_t>(update.updates.size());
+    for (const auto& update : update.updates) {
+        packet << update;
+    }
+    return packet;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, StateUpdate& update) {
+    uint32_t update_count;
+    packet >> update.client_id >> update_count;
+    update.updates.resize(update_count);
+    for (auto& update : update.updates) packet >> update;
     return packet;
 }
 
