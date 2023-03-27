@@ -78,9 +78,10 @@ struct StateUpdate {
             Transform
         };
         struct Transform {
-            float x;
-            float y;
+            sf::Vector2f pos;
+            sf::Vector2f vel;
             float ang_radians;
+            float ang_vel_radians;
         };
         Type update_type;
         union {
@@ -104,7 +105,7 @@ inline sf::Packet& operator<<(sf::Packet& packet, const StateUpdate::Update& upd
     packet << update.entity_id << static_cast<uint32_t>(update.update_type);
     switch (update.update_type) {
         case StateUpdate::Update::Type::Transform:
-            packet << update.transform.x << update.transform.y << update.transform.ang_radians;
+            packet << update.transform.pos << update.transform.vel << update.transform.ang_radians << update.transform.ang_vel_radians;
             break;
     }
     return packet;
@@ -115,10 +116,17 @@ inline sf::Packet& operator>>(sf::Packet& packet, StateUpdate::Update& update) {
     update.update_type = static_cast<StateUpdate::Update::Type>(update_type_int);
     switch (update.update_type) {
         case StateUpdate::Update::Type::Transform:
-            packet >> update.transform.x >> update.transform.y >> update.transform.ang_radians;
+            packet >> update.transform.pos >> update.transform.vel >> update.transform.ang_radians >> update.transform.ang_vel_radians;
             break;
     }
     return packet;
+}
+
+inline sf::Packet& operator<<(sf::Packet& packet, const sf::Vector2f& vec) {
+    return packet << vec.x << vec.y;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, sf::Vector2f& vec) {
+    return packet >> vec.x >> vec.y;
 }
 
 inline sf::Packet& operator<<(sf::Packet& packet, const StateUpdate& update) {
