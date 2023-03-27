@@ -25,6 +25,7 @@ target_sources(main PRIVATE
     "${SOURCE_DIR}/main.cpp"
     "${SOURCE_DIR}/gamestate.cpp"
     "${SOURCE_DIR}/input/input.cpp"
+    "${SOURCE_DIR}/net/client.cpp"
     "${SOURCE_DIR}/net/packets.cpp"
     "${SOURCE_DIR}/net/server.cpp"
     "${SOURCE_DIR}/scenes/gameclient.cpp"

@@ -13,22 +13,21 @@ class Server {
         enum class State {
             Connecting,
             Connected,
-            Dead
+            TimedOut
         };
-        sf::IpAddress address = {127, 0, 0, 1};
+        sf::IpAddress address = sf::IpAddress::Any;
         uint32_t port;
         uint32_t challenge_issued;
         uint32_t client_salt;
-        uint32_t challenge_response;
+        uint32_t response;
         util::Time lastPacketTime;
         State state;
     };
 public:
     Server(const uint32_t port);
+    void serve_forever();
 
-    void serve();
-
-private:
+protected:
     inline bool send(sf::Packet& packet, sf::IpAddress addr, uint32_t port);
     inline bool send(sf::Packet& packet, const Client& client);
     inline bool send(sf::Packet& packet, ClientID id);
@@ -37,6 +36,8 @@ private:
     inline ClientID add(sf::IpAddress address, uint32_t port, uint32_t challenge_issued);
     inline void remove(ClientID id);
 
+private:
+    inline static const util::Duration timeout = util::Duration {30.f};
     sf::UdpSocket mSocket;
     const uint32_t maxClients = 0xFFFF;;
     const unsigned short mPort;

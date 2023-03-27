@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <entt/entt.hpp>
 #include <SFML/Network.hpp>
 
 /**
@@ -19,7 +20,8 @@ enum class PacketType {
     Challenge,
     ChallengeResponse,
     ConnectionAccepted,
-    Ping, Pong
+    Ping, Pong,
+    EntityUpdate
 };
 
 struct Header {
@@ -35,14 +37,14 @@ struct ConnectionRequest {
 struct Challenge {
     static const PacketType packetType = PacketType::Challenge;
     uint32_t client_id;             // server-side ID that client can use to identify itself
-    uint32_t challenge_salt;        // server-generated salt
+    uint32_t salt;        // server-generated salt
 };
 /* Client to Server */
 struct ChallengeResponse {
     static const PacketType packetType = PacketType::ChallengeResponse;
     uint32_t client_id;             // server-side ID that client can use to identify itself
-    uint32_t challenge_salt;        // client-generated salt
-    uint32_t challenge_response;    // (server_salt ^ client_salt)
+    uint32_t salt;        // client-generated salt
+    uint32_t response;    // (server_salt ^ client_salt)
 };
 /* Server to Client */
 struct ConnectionAccepted {
@@ -61,12 +63,61 @@ struct Pong {
     static const PacketType packetType = PacketType::Pong;
     uint32_t client_id;             // server-side ID that client can use to identify itself
     uint64_t timestamp_nanosec;
-    Pong() = delete;
+    Pong() = default;
     explicit Pong(const Ping& ping): client_id(ping.client_id), timestamp_nanosec(ping.timestamp_nanosec) {}
     uint64_t estimate_latency_us() const;
     float estimate_latency_ms() const;
 };
 
+struct EntityUpdate {
+    static const PacketType packetType = PacketType::EntityUpdate;
+    uint32_t client_id;
+    entt::entity entity_id;
+    enum class UpdateType {
+        Transform
+    };
+    struct TransformUpdate {
+        float x;
+        float y;
+        float ang_radians;
+    };
+    UpdateType update_type;
+    union {
+        TransformUpdate transform;
+    };
+    explicit EntityUpdate(uint32_t client, entt::entity ent, entt::registry& reg);
+};
+
+inline sf::Packet& operator<<(sf::Packet& packet, const entt::entity& ent_id) {
+    return packet << static_cast<uint32_t>(ent_id);
+}
+inline sf::Packet& operator>>(sf::Packet& packet, entt::entity& ent_id) {
+    uint32_t ent_id_int;
+    packet >> ent_id_int;
+    ent_id = static_cast<entt::entity>(ent_id_int);
+    return packet;
+}
+
+inline sf::Packet& operator<<(sf::Packet& packet, const EntityUpdate& update) {
+    packet << update.client_id << update.entity_id << static_cast<uint32_t>(update.update_type);
+    switch (update.update_type) {
+    case EntityUpdate::UpdateType::Transform:
+        packet << update.transform.x << update.transform.y << update.transform.ang_radians;
+        break;
+    }
+    return packet;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, EntityUpdate& update) {
+    uint32_t updateTypeInt;
+    packet >> update.client_id >> update.entity_id >> updateTypeInt;
+    update.update_type = static_cast<EntityUpdate::UpdateType>(updateTypeInt);
+    switch (update.update_type) {
+    case EntityUpdate::UpdateType::Transform:
+        packet >> update.transform.x >> update.transform.y >> update.transform.ang_radians;
+        break;
+    }
+    return packet;
+}
 
 inline sf::Packet& operator<<(sf::Packet& packet, const PacketType type) {
     return packet << static_cast<uint32_t>(type);
@@ -88,10 +139,10 @@ inline sf::Packet& operator<<(sf::Packet& packet, const ConnectionRequest& reque
     return packet;
 }
 inline sf::Packet& operator<<(sf::Packet& packet, const Challenge& challenge) {
-    return packet << challenge.client_id << challenge.challenge_salt;
+    return packet << challenge.client_id << challenge.salt;
 }
 inline sf::Packet& operator<<(sf::Packet& packet, const ChallengeResponse& response) {
-    return packet << response.client_id << response.challenge_salt << response.challenge_response;
+    return packet << response.client_id << response.salt << response.response;
 }
 inline sf::Packet& operator<<(sf::Packet& packet, const ConnectionAccepted& accepted) {
     return packet << accepted.client_id;
@@ -107,10 +158,10 @@ inline sf::Packet& operator>>(sf::Packet& packet, ConnectionRequest& request) {
     return packet;
 }
 inline sf::Packet& operator>>(sf::Packet& packet, Challenge& challenge) {
-    return packet >> challenge.client_id >> challenge.challenge_salt;
+    return packet >> challenge.client_id >> challenge.salt;
 }
 inline sf::Packet& operator>>(sf::Packet& packet, ChallengeResponse& response) {
-    return packet >> response.client_id >> response.challenge_salt >> response.challenge_response;
+    return packet >> response.client_id >> response.salt >> response.response;
 }
 inline sf::Packet& operator>>(sf::Packet& packet, ConnectionAccepted& accepted) {
     return packet >> accepted.client_id;

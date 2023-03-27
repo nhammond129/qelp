@@ -7,7 +7,7 @@ Server::Server(const uint32_t port) : mPort(port), _next_id(0) {
     util::log("Server started at port " + std::to_string(port));
 }
 
-void Server::serve() {
+void Server::serve_forever() {
     auto status = mSocket.bind(mPort);
     if (status != sf::Socket::Status::Done) {
         util::log("Failed to bind socket");
@@ -19,6 +19,16 @@ void Server::serve() {
     unsigned short remotePort;
     std::optional<sf::IpAddress> remoteAddr = std::nullopt;
     while (true) {
+        // check clients for timeouts
+        const auto now = util::Clock::now();
+        for (auto it = mClients.begin(); it != mClients.end();) {
+            if ((now - it->second.lastPacketTime) > timeout) {
+                util::log("Client " + it->second.address.toString() + ":" + std::to_string(it->second.port) + " timed out");
+                it = mClients.erase(it);
+            } else {
+                ++it;
+            }
+        }
         if (!(mSocket.receive(packet, remoteAddr, remotePort) == sf::Socket::Status::Done)) continue;
         net::Header header;
         if (!(packet >> header)) continue;
@@ -31,11 +41,11 @@ void Server::serve() {
                     // TODO: inform client
                     break;
                 }
-                uint32_t challenge_salt = (uint32_t)std::rand();
-                ClientID cid = add(remoteAddr.value(), remotePort, challenge_salt);
+                uint32_t salt = (uint32_t)std::rand();
+                ClientID cid = add(remoteAddr.value(), remotePort, salt);
                 net::Challenge challenge {
                     .client_id = cid,
-                    .challenge_salt = challenge_salt
+                    .salt = salt
                 };
                 sf::Packet challengePacket;
                 challengePacket << Header { .type = net::PacketType::Challenge } << challenge;
@@ -44,7 +54,7 @@ void Server::serve() {
                     util::log("Failed to send challenge packet");
                     break;
                 }
-                util::debuglog("Sent challenge to " + remoteAddr.value().toString() + ":" + std::to_string(remotePort) + " (salt: " + std::to_string(challenge.challenge_salt) + ")");
+                util::debuglog("Sent challenge to " + remoteAddr.value().toString() + ":" + std::to_string(remotePort) + " (salt: " + std::to_string(challenge.salt) + ")");
 
                 break;
             }
@@ -58,15 +68,15 @@ void Server::serve() {
                 Client& client = lookupClient(response.client_id);
                 if (client.address != remoteAddr.value() || client.port != remotePort) break;  // wrong client!
                 client.lastPacketTime = util::Clock::now();
-                client.client_salt = response.challenge_salt;
-                client.challenge_response = response.challenge_response;
+                client.client_salt = response.salt;
+                client.response = response.response;
 
-                uint32_t expected_response = client.challenge_issued ^ response.challenge_salt;
-                if (expected_response != response.challenge_response) {
+                uint32_t expected_response = client.challenge_issued ^ response.salt;
+                if (expected_response != response.response) {
                     // challenge failed
                     util::log("Challenge  issued: " + std::to_string(client.challenge_issued));
-                    util::log("Client's     salt: " + std::to_string(response.challenge_salt));
-                    util::log("Actual   response: " + std::to_string(response.challenge_response));
+                    util::log("Client's     salt: " + std::to_string(response.salt));
+                    util::log("Actual   response: " + std::to_string(response.response));
                     util::log("Expected response: " + std::to_string(expected_response));
                     remove(response.client_id);
                 }

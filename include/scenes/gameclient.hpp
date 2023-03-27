@@ -19,6 +19,7 @@ public:
 private:
     game::State mGameState;
     sf::RenderTexture mWorldRT;
+    
 };
 
 };  // namespace scenes
