@@ -4,6 +4,10 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
+namespace net {
+    struct StateUpdate;
+};  // namespace net
+
 namespace game {
 
 struct PlayerDataComponent {
@@ -31,16 +35,30 @@ struct shipState {
 
 class State {
 public:
-    explicit State();
+    State();
     ~State() = default;
 
     void update(const sf::Time& dt);
 
+    entt::entity makeAsteroid(const sf::Vector2f& pos, float radius);  // UNTESTED
     entt::entity createPlayer(const sf::Vector2f& position);
     entt::registry& getRegistry() { return mRegistry; }
+
+    net::StateUpdate getFullStateUpdate();
 private:
     b2World mWorld;
     entt::registry mRegistry;
+};
+
+class LocalState: public State {
+public:
+    LocalState(): State() {};
+    ~LocalState() = default;
+
+    entt::entity getPlayer() { return mPlayer; }
+
+private:
+    entt::entity mPlayer = entt::null;
 };
 
 };  // namespace game

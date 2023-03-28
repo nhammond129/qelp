@@ -1,7 +1,10 @@
 #pragma once
 
+#include <box2d/box2d.h>
 #include <cstdint>
 #include <entt/entt.hpp>
+#include <SFML/Graphics.hpp>
+#include <gamestate.hpp>
 #include <SFML/Network.hpp>
 
 /**
@@ -21,7 +24,8 @@ enum class PacketType {
     ChallengeResponse,
     ConnectionAccepted,
     Ping, Pong,
-    StateUpdate
+    StateUpdate,
+    EntityCreate, EntityDestroy
 };
 
 struct Header {
@@ -71,25 +75,108 @@ struct Pong {
 
 struct StateUpdate {
     static const PacketType packetType = PacketType::StateUpdate;
+    StateUpdate(): client_id(0), updates({}) {}
     uint32_t client_id;
     struct Update {
-        entt::entity entity_id;
         enum class Type {
             Transform
         };
+        Update(): entity_id(entt::null), type(Type::Transform), transform() {}
+        Update(entt::entity id, Type type, entt::registry& registry): entity_id(id), type(type) {
+            switch (type) {
+                case Type::Transform: {
+                    auto& bodycomponent = registry.get<game::b2BodyComponent>(entity_id);
+                    transform = Transform(bodycomponent.body);
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+        entt::entity entity_id;
         struct Transform {
+            Transform(): pos(0.f, 0.f), vel(0.f, 0.f), ang_radians(0.f), ang_vel_radians(0.f) {}
+            Transform(b2Body* body): pos(body->GetPosition().x, body->GetPosition().y),
+                                     vel(body->GetLinearVelocity().x, body->GetLinearVelocity().y),
+                                     ang_radians(body->GetAngle()),
+                                     ang_vel_radians(body->GetAngularVelocity()) {}
             sf::Vector2f pos;
             sf::Vector2f vel;
             float ang_radians;
             float ang_vel_radians;
         };
-        Type update_type;
+        Type type;
         union {
             Transform transform;
         };
     };
-    std::vector<Update> updates;
+    std::list<Update> updates;
 };
+
+/*
+struct EntityCreate {
+    static const PacketType packetType = PacketType::EntityCreate;
+    uint32_t client_id;
+    entt::entity entity_id;
+    sf::Vector2f pos;
+    float ang_radians;
+    enum class ShapeType {
+        ConvexPoly,
+        Circle,
+        Rectangle
+    };
+    ShapeType shape_type;
+    union {
+        // TODO: use b2Shape instead of sf::Shape lol
+        sf::ConvexShape convexpoly;
+        sf::CircleShape circle;
+        sf::RectangleShape rectangle;
+    };
+};
+
+struct EntityDestroyBody {
+    static const PacketType packetType = PacketType::EntityDestroy;
+    uint32_t client_id;
+    entt::entity entity_id;
+};
+*/
+
+// Eyestrain-inducing pile of operator overloaders
+
+inline sf::Packet& operator>>(sf::Packet& packet, sf::Color& color) {
+    return packet >> color.r >> color.g >> color.b >> color.a;
+}
+inline sf::Packet& operator<<(sf::Packet& packet, const sf::Color& color) {
+    return packet << color.r << color.g << color.b << color.a;
+}
+
+inline sf::Packet& operator<<(sf::Packet& packet, const sf::Vector2f& vec) {
+    return packet << vec.x << vec.y;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, sf::Vector2f& vec) {
+    return packet >> vec.x >> vec.y;
+}
+
+inline sf::Packet& operator<<(sf::Packet& packet, const sf::CircleShape& shape) {
+    return packet << shape.getRadius();
+}
+inline sf::Packet& operator>>(sf::Packet& packet, sf::CircleShape& shape) {
+    float radius;
+    packet >> radius;
+    shape.setRadius(radius);
+    return packet;
+}
+
+inline sf::Packet& operator<<(sf::Packet& packet, const sf::RectangleShape& shape) {
+    return packet << shape.getSize();
+}
+inline sf::Packet& operator>>(sf::Packet& packet, sf::RectangleShape& shape) {
+    sf::Vector2f size;
+    packet >> size;
+    shape.setSize(size);
+    return packet;
+}
 
 inline sf::Packet& operator<<(sf::Packet& packet, const entt::entity& ent_id) {
     return packet << static_cast<uint32_t>(ent_id);
@@ -102,8 +189,8 @@ inline sf::Packet& operator>>(sf::Packet& packet, entt::entity& ent_id) {
 }
 
 inline sf::Packet& operator<<(sf::Packet& packet, const StateUpdate::Update& update) {
-    packet << update.entity_id << static_cast<uint32_t>(update.update_type);
-    switch (update.update_type) {
+    packet << update.entity_id << static_cast<uint32_t>(update.type);
+    switch (update.type) {
         case StateUpdate::Update::Type::Transform:
             packet << update.transform.pos << update.transform.vel << update.transform.ang_radians << update.transform.ang_vel_radians;
             break;
@@ -113,20 +200,13 @@ inline sf::Packet& operator<<(sf::Packet& packet, const StateUpdate::Update& upd
 inline sf::Packet& operator>>(sf::Packet& packet, StateUpdate::Update& update) {
     uint32_t update_type_int;
     packet >> update.entity_id >> update_type_int;
-    update.update_type = static_cast<StateUpdate::Update::Type>(update_type_int);
-    switch (update.update_type) {
+    update.type = static_cast<StateUpdate::Update::Type>(update_type_int);
+    switch (update.type) {
         case StateUpdate::Update::Type::Transform:
             packet >> update.transform.pos >> update.transform.vel >> update.transform.ang_radians >> update.transform.ang_vel_radians;
             break;
     }
     return packet;
-}
-
-inline sf::Packet& operator<<(sf::Packet& packet, const sf::Vector2f& vec) {
-    return packet << vec.x << vec.y;
-}
-inline sf::Packet& operator>>(sf::Packet& packet, sf::Vector2f& vec) {
-    return packet >> vec.x >> vec.y;
 }
 
 inline sf::Packet& operator<<(sf::Packet& packet, const StateUpdate& update) {
@@ -159,6 +239,69 @@ inline sf::Packet& operator<<(sf::Packet& packet, const Header& header) {
 inline sf::Packet& operator>>(sf::Packet& packet, Header& header) {
     return packet >> header.proto_id >> header.type;
 }
+
+inline sf::Packet& operator<<(sf::Packet& packet, const sf::ConvexShape& shape) {
+    packet << shape.getPointCount();
+    for (size_t i = 0; i < shape.getPointCount(); ++i) {
+        packet << shape.getPoint(i);
+    }
+    return packet;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, sf::ConvexShape& shape) {
+    size_t point_count;
+    packet >> point_count;
+    shape.setPointCount(point_count);
+    for (size_t i = 0; i < point_count; ++i) {
+        sf::Vector2f point;
+        packet >> point;
+        shape.setPoint(i, point);
+    }
+    return packet;
+}
+
+/*
+inline sf::Packet& operator<<(sf::Packet& packet, const EntityCreate& entity_create) {
+    packet << entity_create.client_id << entity_create.entity_id << entity_create.pos << entity_create.ang_radians << static_cast<uint32_t>(entity_create.shape_type);
+    switch (entity_create.shape_type) {
+        case EntityCreate::ShapeType::ConvexPoly:
+            packet << entity_create.convexpoly;
+            break;
+        case EntityCreate::ShapeType::Circle:
+            packet << entity_create.circle;
+            break;
+        case EntityCreate::ShapeType::Rectangle:
+            packet << entity_create.rectangle;
+            break;
+    }
+    return packet;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, EntityCreate& body) {
+    uint32_t shape_type_int;
+    packet >> body.client_id >> body.entity_id >> body.pos >> body.ang_radians >> shape_type_int;
+    body.shape_type = static_cast<EntityCreate::ShapeType>(shape_type_int);
+    switch (body.shape_type) {
+        case EntityCreate::ShapeType::ConvexPoly:
+            packet >> body.convexpoly;
+            break;
+        case EntityCreate::ShapeType::Circle:
+            packet >> body.circle;
+            break;
+        case EntityCreate::ShapeType::Rectangle:
+            packet >> body.rectangle;
+            break;
+    }
+    return packet;
+}
+
+inline sf::Packet& operator<<(sf::Packet& packet, const EntityDestroyBody& body) {
+    packet << body.client_id << body.entity_id;
+    return packet;
+}
+inline sf::Packet& operator>>(sf::Packet& packet, EntityDestroyBody& body) {
+    packet >> body.client_id >> body.entity_id;
+    return packet;
+}
+*/
 
 inline sf::Packet& operator<<(sf::Packet& packet, const ConnectionRequest& request) {
     return packet;

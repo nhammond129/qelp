@@ -1,6 +1,7 @@
 #pragma once
 
 #include <net/packets.hpp>
+#include <gamestate.hpp>
 #include <SFML/Network.hpp>
 #include <util.hpp>
 
@@ -36,6 +37,7 @@ protected:
     inline ClientID add(sf::IpAddress address, uint32_t port, uint32_t challenge_issued);
     inline void remove(ClientID id);
 
+    game::State mGameState;
 private:
     inline static const util::Duration timeout = util::Duration {30.f};
     sf::UdpSocket mSocket;

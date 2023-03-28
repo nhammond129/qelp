@@ -29,6 +29,17 @@ void Server::serve_forever() {
                 ++it;
             }
         }
+        // vomit state updates at connected clients
+        StateUpdate stateUpdate = mGameState.getFullStateUpdate();
+        for (auto& client : mClients) {
+            if (client.second.state == Client::State::Connected) {
+                stateUpdate.client_id = client.first;
+                sf::Packet statePacket;
+                statePacket << Header { .type = PacketType::StateUpdate }
+                            << stateUpdate;
+                send(statePacket, client.second.address, client.second.port);
+            }
+        }
         if (!(mSocket.receive(packet, remoteAddr, remotePort) == sf::Socket::Status::Done)) continue;
         net::Header header;
         if (!(packet >> header)) continue;

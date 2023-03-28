@@ -16,7 +16,8 @@ public:
         Connected
     };
     Client(const sf::IpAddress address, const uint16_t serverPort);
-    void run();
+    void think();
+    void run();  // think() forever.
 private:
     void consumePacket();
     void connect();

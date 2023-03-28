@@ -10,25 +10,27 @@ Client::Client(const sf::IpAddress address, const uint16_t port): mServerAddress
     }
 }
 
-void Client::run() {
-    while(true) {
-        consumePacket();
+void Client::think() {
+    consumePacket();
 
-        switch(mState) {
-            case State::Disconnected: {
-                connect();
-                mState = State::AwaitingChallenge;
-                break;
-            }
-            case State::Connected: {
-                sendPing();
-                sf::sleep(sf::seconds(1));
-                break;
-            }
-            default: {
-            }
+    switch(mState) {
+        case State::Disconnected: {
+            connect();
+            mState = State::AwaitingChallenge;
+            break;
+        }
+        case State::Connected: {
+            sendPing();
+            sf::sleep(sf::seconds(1));
+            break;
+        }
+        default: {
         }
     }
+}
+
+void Client::run() {
+    while(true) think();
 }
 
 void Client::consumePacket() {
