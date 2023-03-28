@@ -4,6 +4,7 @@
 #include <entt/entt.hpp>
 #include <gamestate.hpp>
 #include <IScene.hpp>
+#include <net/client.hpp>
 
 namespace scenes {
 
@@ -20,6 +21,7 @@ private:
     game::State mGameState;
     sf::RenderTexture mWorldRT;
     
+    net::Client mClient;
 };
 
 };  // namespace scenes
