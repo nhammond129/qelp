@@ -10,7 +10,7 @@ Client::Client(const sf::IpAddress address, const uint16_t port): mServerAddress
     }
 }
 
-void Client::think() {
+void Client::think(game::State& gamestate) {
     consumePacket();
 
     switch(mState) {
@@ -27,10 +27,6 @@ void Client::think() {
         default: {
         }
     }
-}
-
-void Client::run() {
-    while(true) think();
 }
 
 void Client::consumePacket() {

@@ -16,8 +16,12 @@ public:
         Connected
     };
     Client(const sf::IpAddress address, const uint16_t serverPort);
-    void think();
-    void run();  // think() forever.
+
+    State getState() const { return mState; }
+
+    // mutates `gamestate`
+    void think(game::State& gamestate);
+
 private:
     void consumePacket();
     void connect();

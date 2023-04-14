@@ -5,6 +5,7 @@
 #include <gamestate.hpp>
 #include <IScene.hpp>
 #include <net/client.hpp>
+#include <net/gameserver.hpp>
 
 namespace scenes {
 
@@ -22,6 +23,7 @@ private:
     sf::RenderTexture mWorldRT;
     
     net::Client mClient;
+    net::GameServer mServer;  // tmp, for testing
 };
 
 };  // namespace scenes

@@ -6,12 +6,16 @@
 
 namespace scenes {
 
-GameClient::GameClient(SceneManager& manager): IScene(manager) {
+GameClient::GameClient(SceneManager& manager):
+        IScene(manager),
+        mClient(sf::IpAddress{127, 0, 0, 1}/*localhost*/, config::SERVER_PORT),
+        mServer(config::SERVER_PORT) {
     if (!mWorldRT.create(manager.window().getSize()))
         throw std::runtime_error("Error creating render texture");
 
-    // add some random ents
     auto player = mGameState.createPlayer({0.f, 0.f});
+    /*
+    // add some random ents
     for (int i=0; i<100; i++) {
         mGameState.createPlayer(
             sf::Vector2f {
@@ -20,9 +24,20 @@ GameClient::GameClient(SceneManager& manager): IScene(manager) {
             }
         );
     }
+    */
 
     // center view on {0, 0}
     util::setViewCenter(mWorldRT, {0.f, 0.f});
+
+    // start server thread
+    mServer.serve_forever_nonblocking();
+
+    // connect to server
+        util::log("Connecting to server...");
+    while (mClient.getState() != net::Client::State::Connected) {
+        mClient.think(mGameState);
+    }
+    util::log("Connected to server!");
 }
 
 void GameClient::handleEvent(const sf::Event& event) {
@@ -147,6 +162,8 @@ void GameClient::update(const sf::Time& dt) {
             elapsed -= config::FIXED_UPDATE_INTERVAL;
         }
     }
+    // non-blocking network consumption
+    mClient.think(mGameState);
 }
 
 void GameClient::draw(sf::RenderWindow& window) {

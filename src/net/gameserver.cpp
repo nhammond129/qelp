@@ -1,24 +1,15 @@
-#include <net/server.hpp>
-#include <optional>
+#include <net/gameserver.hpp>
+#include <thread>
 
 namespace net {
 
-Server::Server(const uint32_t port) : mPort(port), _next_id(0) {
-    auto status = mSocket.bind(mPort);
-    if (status != sf::Socket::Status::Done) {
-        util::log("Failed to bind socket");
-        throw std::runtime_error("Failed to bind socket");
-    }
-    util::log("Server started at port " + std::to_string(port));
-
-    mSocket.setBlocking(false);
+GameServer::GameServer(const uint32_t port) : Server(port) {
+    util::log("Starting game server...");
 }
 
-sf::UdpSocket::Status Server::receive(sf::Packet& packet, std::optional<sf::IpAddress>& remoteAddr, unsigned short& remotePort) {
-    return mSocket.receive(packet, remoteAddr, remotePort);
-}
+void GameServer::serve_forever() {
+    util::log("Serving forever...");
 
-void Server::serve_forever() {
     sf::Packet packet;
     unsigned short remotePort;
     std::optional<sf::IpAddress> remoteAddr = std::nullopt;
@@ -33,7 +24,18 @@ void Server::serve_forever() {
                 ++it;
             }
         }
-        if (!(mSocket.receive(packet, remoteAddr, remotePort) == sf::Socket::Status::Done)) continue;
+        // vomit state updates at connected clients
+        StateUpdate stateUpdate = mGameState.getFullStateUpdate();
+        for (auto& client : mClients) {
+            if (client.second.state == Client::State::Connected) {
+                stateUpdate.client_id = client.first;
+                sf::Packet statePacket;
+                statePacket << Header { .type = PacketType::StateUpdate }
+                            << stateUpdate;
+                send(statePacket, client.second.address, client.second.port);
+            }
+        }
+        if (!(receive(packet, remoteAddr, remotePort) == sf::Socket::Status::Done)) continue;
         net::Header header;
         if (!(packet >> header)) continue;
         if (header.proto_id != net::protocolID) continue;  // wrong protocol. TODO: inform client
@@ -85,6 +87,9 @@ void Server::serve_forever() {
                     remove(response.client_id);
                 }
                 client.state = Client::State::Connected;
+                /* TODO:
+                 *  - send a player object id to the client
+                 */
 
                 // report accepted
                 sf::Packet acceptedPacket;
@@ -111,65 +116,13 @@ void Server::serve_forever() {
     }
 }
 
-inline bool Server::send(sf::Packet& packet, sf::IpAddress addr, uint32_t port)  {
-    auto status = mSocket.send(packet, addr, port);
-    if (!(status == sf::Socket::Status::Done)) {
-        util::log(
-            "Failed to send challenge to client (" + \
-                addr.toString() + ":" + \
-                std::to_string(port) + \
-                ")" + \
-            " sf::Socket::Status = " + \
-                std::to_string((size_t)status)
-        );
-        return false;
-    }
-    return true;
-}
-
-inline bool Server::send(sf::Packet& packet, const Server::Client& client) {
-    return send(packet, client.address, client.port);
-}
-
-inline bool Server::send(sf::Packet& packet, ClientID id) {
-    if (!hasClient(id)) return false;
-    Client& client = lookupClient(id);
-    return send(packet, client);
-}
-
-inline Server::Client& Server::lookupClient(const ClientID id) {
-    assert(hasClient(id));
-    return mClients[id];
-}
-
-inline bool Server::hasClient(ClientID id) const  {
-    return mClients.find(id) != mClients.end();
-}
-
-inline ClientID Server::add(sf::IpAddress addr, uint32_t port, uint32_t challenge_issued) {
-    if (mClients.size() >= maxClients) {
-        throw std::runtime_error("Server is full");
-    }
-    ClientID id;
-    if (mFreeIDs.empty()) {
-        id = _next_id++;
-    } else {
-        id = mFreeIDs.front();
-        mFreeIDs.pop_front();
-    }
-    mClients[id] = {
-        .address = addr,
-        .port = port,
-        .challenge_issued = challenge_issued,
-        .lastPacketTime = util::Clock::now(),
-        .state = Client::State::Connecting
-    };
-    return id;
-}
-
-inline void Server::remove(ClientID id) {
-    mClients.erase(id);
-    mFreeIDs.push_front(id);
+void GameServer::serve_forever_nonblocking() {
+    util::log("Serving forever (non-blocking)...");
+    // create a thread to run serve_forever in
+    std::thread t([this]() {
+        this->serve_forever();
+    });
+    t.detach();
 }
 
 };  // namespace net
