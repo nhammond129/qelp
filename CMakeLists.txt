@@ -30,7 +30,6 @@ target_sources(main PRIVATE
     "${SOURCE_DIR}/net/packets.cpp"
     "${SOURCE_DIR}/net/server.cpp"
     "${SOURCE_DIR}/scenes/gameclient.cpp"
-    "${SOURCE_DIR}/scenes/GameScene.cpp"
     "${SOURCE_DIR}/scenes/MenuScene.cpp"
     "${SOURCE_DIR}/scenes/SceneManager.cpp"
     "${SOURCE_DIR}/util.cpp"

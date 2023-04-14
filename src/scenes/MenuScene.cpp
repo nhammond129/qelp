@@ -7,10 +7,7 @@ namespace scenes {
 
 MenuScene::MenuScene(SceneManager& manager) : IScene(manager) {
     mOptions = {
-        Option(sf::Text("Play", mFont, 30), [this](){
-            mManager.pushScene(new GameScene(mManager));
-        }),
-        Option(sf::Text("Solo Multiplayer lol", mFont, 30), [this](){
+        Option(sf::Text("Play (local server)", mFont, 30), [this](){
             mManager.pushScene(new GameClient(mManager));
         }),
         Option(sf::Text("Settings", mFont, 30), [this](){
