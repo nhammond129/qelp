@@ -1,6 +1,11 @@
-# Dumpster fire 0.0.1
+# Dumpster fire 0.0.2
 
-_idk what I'm doing edition_
+This is an old game project that's on hiatus since I wasn't sure which direciton to take it in.\
+It's roughly just messy entt/box2d/sfml/imgui boilerplate at this point.
+
+Last I left off was somewhere in networking code, which really illuminated the need for a proper design pass. This ... never happened, lol.
+
+I'm not sure if I'll ever pick this up again, but I'm keeping it around since it's a good example of my code style and I might want to reference it in the future.
 
 ## Table of Contents
 1. [Building](#building)
