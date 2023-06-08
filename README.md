@@ -1,6 +1,6 @@
 # Dumpster fire 0.0.2
 
-This is an old game project that's on hiatus since I wasn't sure which direciton to take it in.\
+This is an old game project that's on (indefinite? 👀) hiatus since I wasn't sure which direciton to take it in.\
 It's roughly just messy entt/box2d/sfml/imgui boilerplate at this point.
 
 Last I left off was somewhere in networking code, which really illuminated the need for a proper design pass. This ... never happened, lol.
