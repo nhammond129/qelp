@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <unordered_map>
 #ifdef __linux__
 #include <unistd.h>
 #elif __APPLE__

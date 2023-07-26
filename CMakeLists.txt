@@ -23,13 +23,6 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/docs")
 add_executable(main)
 target_sources(main PRIVATE
     "${SOURCE_DIR}/main.cpp"
-    "${SOURCE_DIR}/gamestate.cpp"
-    "${SOURCE_DIR}/input/input.cpp"
-    "${SOURCE_DIR}/net/client.cpp"
-    "${SOURCE_DIR}/net/gameserver.cpp"
-    "${SOURCE_DIR}/net/packets.cpp"
-    "${SOURCE_DIR}/net/server.cpp"
-    "${SOURCE_DIR}/scenes/gameclient.cpp"
     "${SOURCE_DIR}/scenes/MenuScene.cpp"
     "${SOURCE_DIR}/scenes/SceneManager.cpp"
     "${SOURCE_DIR}/util.cpp"
@@ -54,11 +47,7 @@ target_link_libraries(phystest PRIVATE
 
 add_executable(server)
 target_sources(server PRIVATE
-    "${SOURCE_DIR}/dedicated_server.cpp"
-    "${SOURCE_DIR}/gamestate.cpp"
-    "${SOURCE_DIR}/net/gameserver.cpp"
-    "${SOURCE_DIR}/net/packets.cpp"
-    "${SOURCE_DIR}/net/server.cpp"
+    "${SOURCE_DIR}/server.cpp"
     "${SOURCE_DIR}/util.cpp"
 )
 target_link_libraries(server PRIVATE

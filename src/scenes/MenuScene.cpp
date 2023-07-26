@@ -7,8 +7,13 @@ namespace scenes {
 
 MenuScene::MenuScene(SceneManager& manager) : IScene(manager) {
     mOptions = {
-        Option(sf::Text("Play (local server)", mFont, 30), [this](){
-            mManager.pushScene(new GameClient(mManager));
+        Option(sf::Text("Play", mFont, 30), [this](){
+            // mManager.pushScene(new GameClient(mManager));
+            std::cout << "<Play>" << std::endl;
+        }),
+        Option(sf::Text("Join", mFont, 30), [this](){
+            // mManager.pushScene(new GameClient(mManager));
+            std::cout << "<Join>" << std::endl;
         }),
         Option(sf::Text("Settings", mFont, 30), [this](){
             // TODO: Settings menu

@@ -84,7 +84,6 @@ bool SceneManager::isRunning() const {
 
 void SceneManager::quit() {
     mWindow.close();
-    ImGui::SFML::Shutdown(mWindow);
 }
 
 const std::shared_ptr<IScene> SceneManager::getCurrentScene() const {
